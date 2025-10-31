@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Clips - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .job-id {
+            color: #666;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status.processing {
+            background: #3498db;
+            color: white;
+        }
+
+        .status.completed {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status.failed {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            color: #e74c3c;
+        }
+
+        .clips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .clip-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .clip-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .clip-video {
+            width: 100%;
+            height: 200px;
+            background: black;
+        }
+
+        .clip-info {
+            padding: 15px;
+        }
+
+        .clip-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .clip-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .clip-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clip-meta-label {
+            font-weight: 600;
+            color: #999;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .clip-select {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clip-select:hover {
+            background: #e9ecef;
+        }
+
+        .clip-select input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .clip-select label {
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .submit-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            position: sticky;
+            bottom: 20px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .select-count {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .submit-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.custom {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .badge.fixed {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Video Clips Processing</h1>
+            <div class="job-id">Job ID: <span id="jobIdDisplay"></span></div>
+            <div class="status processing" id="statusBadge">Processing...</div>
+        </div>
+
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p>Processing your video clips...</p>
+            <p style="font-size: 14px; margin-top: 10px; opacity: 0.8;">This may take up to 20 minutes for longer videos</p>
+        </div>
+
+        <div class="error" id="errorSection" style="display: none;">
+            <h2>Error</h2>
+            <p id="errorMessage"></p>
+        </div>
+
+        <div id="clipsSection" style="display: none;">
+            <div class="clips-grid" id="clipsGrid"></div>
+
+            <div class="submit-section">
+                <div class="select-count">
+                    <span id="selectedCount">0</span> clips selected
+                </div>
+                <button class="submit-btn" id="submitBtn" onclick="submitSelectedClips()" disabled>
+                    Submit Selected Clips
+                </button>
+                <div class="success-message" id="successMessage">
+                    Selected clips submitted successfully!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://video-splitter-api-production.up.railway.app';
+        const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
+        const POLL_INTERVAL = 60000; // 60 seconds
+        const MAX_POLLS = 20; // 20 minutes total
+
+        let jobId = '';
+        let pollCount = 0;
+        let pollInterval = null;
+        let allClips = [];
+
+        // Get job ID from URL
+        function getJobIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('job_id');
+        }
+
+        // Update selected count
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.clip-checkbox:checked');
+            const count = checkboxes.length;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('submitBtn').disabled = count === 0;
+        }
+
+        // Poll job status
+        async function pollJobStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/status/${jobId}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch job status');
+                }
+
+                const data = await response.json();
+                console.log('Job status:', data);
+
+                if (data.status === 'completed' && data.results) {
+                    clearInterval(pollInterval);
+                    displayClips(data.results);
+                } else if (data.status === 'failed') {
+                    clearInterval(pollInterval);
+                    showError(data.error || 'Job failed');
+                } else {
+                    // Still processing
+                    pollCount++;
+                    if (pollCount >= MAX_POLLS) {
+                        clearInterval(pollInterval);
+                        showError('Processing timeout. Please try again or contact support.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling status:', error);
+                pollCount++;
+                if (pollCount >= MAX_POLLS) {
+                    clearInterval(pollInterval);
+                    showError('Unable to check job status. Please try again later.');
+                }
+            }
+        }
+
+        // Display clips
+        function displayClips(clips) {
+            allClips = clips;
+
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('clipsSection').style.display = 'block';
+            document.getElementById('statusBadge').textContent = 'Completed';
+            document.getElementById('statusBadge').className = 'status completed';
+
+            const grid = document.getElementById('clipsGrid');
+            grid.innerHTML = '';
+
+            clips.forEach((clip, index) => {
+                const card = document.createElement('div');
+                card.className = 'clip-card';
+
+                const modeBadge = clip.mode === 'custom'
+                    ? '<span class="badge custom">Custom</span>'
+                    : '<span class="badge fixed">60s</span>';
+
+                card.innerHTML = `
+                    <video class="clip-video" controls preload="metadata">
+                        <source src="${clip.url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="clip-info">
+                        <div class="clip-title">
+                            ${clip.filename} ${modeBadge}
+                        </div>
+                        <div class="clip-meta">
+                            <div class="clip-meta-item">
+                                <div class="clip-meta-label">Clip #</div>
+                                <div>${clip.clip_number}</div>
+                            </div>
+                            <div class="clip-meta-item">
+                                <div class="clip-meta-label">Duration</div>
+                                <div>${clip.duration}s</div>
+                            </div>
+                            ${clip.start_time ? `
+                                <div class="clip-meta-item">
+                                    <div class="clip-meta-label">Start</div>
+                                    <div>${clip.start_time}</div>
+                                </div>
+                                <div class="clip-meta-item">
+                                    <div class="clip-meta-label">End</div>
+                                    <div>${clip.end_time}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="clip-select">
+                            <input
+                                type="checkbox"
+                                id="clip-${index}"
+                                class="clip-checkbox"
+                                data-clip-index="${index}"
+                                onchange="updateSelectedCount()"
+                            >
+                            <label for="clip-${index}">Select this clip</label>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('statusBadge').textContent = 'Failed';
+            document.getElementById('statusBadge').className = 'status failed';
+        }
+
+        // Submit selected clips
+        async function submitSelectedClips() {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            const checkboxes = document.querySelectorAll('.clip-checkbox:checked');
+            const selectedClips = [];
+
+            checkboxes.forEach(checkbox => {
+                const index = parseInt(checkbox.dataset.clipIndex);
+                selectedClips.push(allClips[index]);
+            });
+
+            const payload = {
+                job_id: jobId,
+                selected_clips: selectedClips
+            };
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    submitBtn.textContent = 'Submitted!';
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                alert('Error submitting clips. Please try again.');
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Selected Clips';
+            }
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            jobId = getJobIdFromUrl();
+
+            if (!jobId) {
+                showError('No job ID provided. Please submit a video first.');
+                return;
+            }
+
+            document.getElementById('jobIdDisplay').textContent = jobId;
+
+            // Start polling
+            pollJobStatus();
+            pollInterval = setInterval(pollJobStatus, POLL_INTERVAL);
+        });
+    </script>
+</body>
+</html>
