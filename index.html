@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Splitter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin-bottom: 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .helper-text {
+            color: #999;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Video Splitter</h1>
+        <p class="subtitle">Split your YouTube videos into clips with custom overlays</p>
+
+        <form id="splitterForm">
+            <div class="form-group">
+                <label for="videoUrl">YouTube URL</label>
+                <input
+                    type="text"
+                    id="videoUrl"
+                    name="videoUrl"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    required
+                >
+                <div class="error" id="urlError">Please enter a valid YouTube URL</div>
+                <div class="helper-text">Enter a full YouTube video URL</div>
+            </div>
+
+            <div class="form-group">
+                <label for="overlay">Video Overlay</label>
+                <select id="overlay" name="overlay" required>
+                    <option value="">Select an overlay...</option>
+                    <option value="minecraft">Minecraft</option>
+                    <option value="subway_surfer">Subway Surfer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="folderName">Video Name (Folder Name)</label>
+                <input
+                    type="text"
+                    id="folderName"
+                    name="folderName"
+                    placeholder="my_video_clips"
+                    required
+                >
+                <div class="helper-text">This will be used as the folder name for your clips</div>
+            </div>
+
+            <div class="form-group">
+                <label>Stream Type</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input
+                            type="radio"
+                            id="videoOnly"
+                            name="streamType"
+                            value="video_only"
+                            checked
+                        >
+                        <label for="videoOnly">Video Only</label>
+                    </div>
+                    <div class="radio-option">
+                        <input
+                            type="radio"
+                            id="videoAudio"
+                            name="streamType"
+                            value="video_audio"
+                        >
+                        <label for="videoAudio">Video + Audio</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">Submit</button>
+        </form>
+
+        <div class="success" id="successMessage">
+            Request submitted successfully!
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('splitterForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const urlError = document.getElementById('urlError');
+
+        // Extract YouTube video ID from URL
+        function extractYouTubeID(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+                /youtube\.com\/embed\/([^&\n?#]+)/,
+                /youtube\.com\/v\/([^&\n?#]+)/
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            return null;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Reset error states
+            urlError.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            // Get form values
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            const overlay = document.getElementById('overlay').value;
+            const folderName = document.getElementById('folderName').value.trim();
+            const streamType = document.querySelector('input[name="streamType"]:checked').value;
+
+            // Extract YouTube video ID
+            const videoId = extractYouTubeID(videoUrl);
+
+            if (!videoId) {
+                urlError.style.display = 'block';
+                return;
+            }
+
+            // Prepare payload
+            const payload = {
+                video_id: videoId,
+                video_url: videoUrl,
+                overlay: overlay,
+                folder_name: folderName,
+                stream_type: streamType
+            };
+
+            // Disable button during submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('https://hook.us1.make.com/kom2fynz85ihopm1ji1k3tcgnyj6odmb', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    successMessage.style.display = 'block';
+                    form.reset();
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                alert('Error submitting form. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+
+        // Real-time URL validation
+        document.getElementById('videoUrl').addEventListener('input', (e) => {
+            const url = e.target.value.trim();
+            if (url && !extractYouTubeID(url)) {
+                urlError.style.display = 'block';
+            } else {
+                urlError.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
