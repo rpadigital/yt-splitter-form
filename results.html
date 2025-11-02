@@ -194,6 +194,37 @@
             box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
         }
 
+        .select-all-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .select-all-container:hover {
+            background: #e9ecef;
+        }
+
+        .select-all-container input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .select-all-container label {
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
         .select-count {
             color: #666;
             margin-bottom: 15px;
@@ -274,6 +305,14 @@
             <div class="clips-grid" id="clipsGrid"></div>
 
             <div class="submit-section">
+                <div class="select-all-container" onclick="toggleSelectAll()">
+                    <input
+                        type="checkbox"
+                        id="selectAllCheckbox"
+                        onchange="toggleSelectAll()"
+                    >
+                    <label for="selectAllCheckbox">Select All Clips</label>
+                </div>
                 <div class="select-count">
                     <span id="selectedCount">0</span> clips selected
                 </div>
@@ -307,9 +346,31 @@
         // Update selected count
         function updateSelectedCount() {
             const checkboxes = document.querySelectorAll('.clip-checkbox:checked');
+            const allCheckboxes = document.querySelectorAll('.clip-checkbox');
             const count = checkboxes.length;
+            const total = allCheckboxes.length;
+
             document.getElementById('selectedCount').textContent = count;
             document.getElementById('submitBtn').disabled = count === 0;
+
+            // Update select all checkbox state
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = count === total && total > 0;
+                selectAllCheckbox.indeterminate = count > 0 && count < total;
+            }
+        }
+
+        // Toggle select all
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const clipCheckboxes = document.querySelectorAll('.clip-checkbox');
+
+            clipCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+
+            updateSelectedCount();
         }
 
         // Poll job status
