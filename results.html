@@ -351,6 +351,65 @@
             color: #999;
             text-align: center;
         }
+
+        .clip-reason {
+            margin-top: 12px;
+            border-top: 1px solid #e9ecef;
+            padding-top: 12px;
+        }
+
+        .reason-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .reason-header:hover {
+            background: #e9ecef;
+        }
+
+        .reason-label {
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #667eea;
+            letter-spacing: 0.5px;
+        }
+
+        .reason-toggle {
+            font-size: 16px;
+            color: #999;
+            transition: transform 0.3s;
+        }
+
+        .reason-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .reason-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 8px;
+        }
+
+        .reason-content.expanded {
+            max-height: 500px;
+            padding: 12px 8px 0 8px;
+        }
+
+        .reason-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -592,6 +651,17 @@
                                 </div>
                             ` : ''}
                         </div>
+                        ${clip.reason ? `
+                            <div class="clip-reason">
+                                <div class="reason-header" onclick="toggleReason(${index})">
+                                    <span class="reason-label">Why this clip?</span>
+                                    <span class="reason-toggle" id="reason-toggle-${index}">▼</span>
+                                </div>
+                                <div class="reason-content" id="reason-content-${index}">
+                                    <div class="reason-text">${clip.reason}</div>
+                                </div>
+                            </div>
+                        ` : ''}
                         <div class="clip-select">
                             <input
                                 type="checkbox"
@@ -607,6 +677,22 @@
 
                 grid.appendChild(card);
             });
+        }
+
+        // Toggle reason dropdown
+        function toggleReason(index) {
+            const toggle = document.getElementById(`reason-toggle-${index}`);
+            const content = document.getElementById(`reason-content-${index}`);
+
+            const isExpanded = content.classList.contains('expanded');
+
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
+            }
         }
 
         // Show error
