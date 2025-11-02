@@ -280,6 +280,77 @@
             background: #3498db;
             color: white;
         }
+
+        .new-video-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .new-video-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .progress-time {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-details {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -288,12 +359,28 @@
             <h1>Video Clips Processing</h1>
             <div class="job-id">Job ID: <span id="jobIdDisplay"></span></div>
             <div class="status processing" id="statusBadge">Processing...</div>
+            <div style="margin-top: 20px;">
+                <a href="index.html" class="new-video-btn">+ Submit Another Video</a>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progressSection" style="display: none;">
+            <div class="progress-info">
+                <div class="progress-label">Processing clips...</div>
+                <div class="progress-time" id="estimatedTime">Calculating...</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-details" id="progressDetails">
+                <span id="clipsProcessed">0</span> of <span id="totalClips">0</span> clips completed
+            </div>
         </div>
 
         <div class="loading" id="loadingSection">
             <div class="spinner"></div>
             <p>Processing your video clips...</p>
-            <p style="font-size: 14px; margin-top: 10px; opacity: 0.8;">This may take up to 20 minutes for longer videos</p>
+            <p style="font-size: 14px; margin-top: 10px; opacity: 0.8;">This may take 3-5 minutes</p>
         </div>
 
         <div class="error" id="errorSection" style="display: none;">
@@ -336,6 +423,9 @@
         let pollCount = 0;
         let pollInterval = null;
         let allClips = [];
+        let startTime = null;
+        let lastClipsCompleted = 0;
+        let clipStartTimes = [];
 
         // Get job ID from URL
         function getJobIdFromUrl() {
@@ -373,6 +463,43 @@
             updateSelectedCount();
         }
 
+        // Update progress display
+        function updateProgress(clipsCompleted, totalClips) {
+            if (!totalClips || totalClips === 0) return;
+
+            // Show progress section
+            document.getElementById('progressSection').style.display = 'block';
+
+            const percentage = (clipsCompleted / totalClips) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('clipsProcessed').textContent = clipsCompleted;
+            document.getElementById('totalClips').textContent = totalClips;
+
+            // Calculate estimated time remaining
+            if (clipsCompleted > lastClipsCompleted) {
+                clipStartTimes.push(Date.now());
+                lastClipsCompleted = clipsCompleted;
+            }
+
+            if (clipStartTimes.length >= 2 && clipsCompleted < totalClips) {
+                // Calculate average time per clip from completed clips
+                const totalTime = Date.now() - clipStartTimes[0];
+                const avgTimePerClip = totalTime / clipStartTimes.length;
+                const remainingClips = totalClips - clipsCompleted;
+                const estimatedMs = remainingClips * avgTimePerClip;
+
+                const minutes = Math.floor(estimatedMs / 60000);
+                const seconds = Math.floor((estimatedMs % 60000) / 1000);
+
+                document.getElementById('estimatedTime').textContent =
+                    `~${minutes}m ${seconds}s remaining`;
+            } else if (clipsCompleted === 0) {
+                document.getElementById('estimatedTime').textContent = 'Calculating...';
+            } else {
+                document.getElementById('estimatedTime').textContent = 'Almost done...';
+            }
+        }
+
         // Poll job status
         async function pollJobStatus() {
             try {
@@ -384,6 +511,11 @@
 
                 const data = await response.json();
                 console.log('Job status:', data);
+
+                // Update progress if we have the data
+                if (data.clips_completed !== undefined && data.total_clips_expected) {
+                    updateProgress(data.clips_completed, data.total_clips_expected);
+                }
 
                 if (data.status === 'completed' && data.results) {
                     clearInterval(pollInterval);
