@@ -15,31 +15,89 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
 
-        .container {
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .video-preview-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 20px;
+        }
+
+        .video-preview-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .video-preview-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-preview-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-preview-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .form-section {
             background: white;
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 500px;
-            width: 100%;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
         }
 
         .form-group {
@@ -73,16 +131,26 @@
 
         .radio-group {
             display: flex;
-            gap: 20px;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .radio-option {
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        input[type="radio"] {
+        .radio-option:hover {
+            background: #e9ecef;
+        }
+
+        .radio-option input[type="radio"] {
             width: 18px;
             height: 18px;
             cursor: pointer;
@@ -92,9 +160,108 @@
             margin-bottom: 0;
             font-weight: 500;
             cursor: pointer;
+            flex: 1;
         }
 
-        button {
+        .timestamp-inputs {
+            margin-top: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .timestamp-inputs.active {
+            display: block;
+        }
+
+        .timestamp-clip {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .timestamp-clip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .timestamp-clip-title {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .timestamp-remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timestamp-remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .timestamp-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .timestamp-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timestamp-input-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .timestamp-input-group input {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .timestamp-add-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timestamp-add-btn:hover {
+            background: #f0f4ff;
+            border-style: solid;
+        }
+
+        .timestamp-add-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button[type="submit"] {
             width: 100%;
             padding: 14px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -107,16 +274,16 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover {
+        button[type="submit"]:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
-        button:active {
+        button[type="submit"]:active {
             transform: translateY(0);
         }
 
-        button:disabled {
+        button[type="submit"]:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
@@ -129,80 +296,156 @@
             display: none;
         }
 
-        .success {
-            background: #27ae60;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-            text-align: center;
-        }
-
         .helper-text {
             color: #999;
             font-size: 12px;
             margin-top: 6px;
         }
+
+        /* Mobile responsive */
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .video-preview-section {
+                position: relative;
+                top: 0;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>YouTube Video Splitter</h1>
-        <p class="subtitle">Split your YouTube videos into clips with custom overlays</p>
+    <div class="page-container">
+        <div class="header">
+            <h1>YouTube Video Splitter</h1>
+            <p>Split your YouTube videos into clips with custom timestamps</p>
+        </div>
 
-        <form id="splitterForm">
-            <div class="form-group">
-                <label for="videoUrl">YouTube URL</label>
-                <input
-                    type="text"
-                    id="videoUrl"
-                    name="videoUrl"
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    required
-                >
-                <div class="error" id="urlError">Please enter a valid YouTube URL</div>
-                <div class="helper-text">Enter a full YouTube video URL</div>
-            </div>
-
-            <div class="form-group">
-                <label>Stream Type</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input
-                            type="radio"
-                            id="videoAudio"
-                            name="streamType"
-                            value="video_audio"
-                            checked
-                        >
-                        <label for="videoAudio">Create Video + Audio Clips</label>
-                    </div>
-                    <div class="radio-option">
-                        <input
-                            type="radio"
-                            id="videoOnly"
-                            name="streamType"
-                            value="video_only"
-                        >
-                        <label for="videoOnly">Create B-Roll</label>
+        <div class="main-content">
+            <!-- YouTube Preview (Left Column) -->
+            <div class="video-preview-section" id="videoPreviewSection" style="display: none;">
+                <h2>Video Preview</h2>
+                <div class="video-preview-container" id="videoPreviewContainer">
+                    <div class="video-preview-placeholder">
+                        Enter a YouTube URL to see preview
                     </div>
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn">Submit</button>
-        </form>
+            <!-- Form (Right Column) -->
+            <div class="form-section">
+                <form id="splitterForm">
+                    <div class="form-group">
+                        <label for="videoUrl">YouTube URL</label>
+                        <input
+                            type="text"
+                            id="videoUrl"
+                            name="videoUrl"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            required
+                        >
+                        <div class="error" id="urlError">Please enter a valid YouTube URL</div>
+                        <div class="helper-text">Enter a full YouTube video URL</div>
+                    </div>
 
-        <div class="success" id="successMessage">
-            Request submitted successfully!
+                    <div class="form-group">
+                        <label>Stream Type</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="videoAudio"
+                                    name="streamType"
+                                    value="video_audio"
+                                    checked
+                                >
+                                <label for="videoAudio">Create Video + Audio Clips</label>
+                            </div>
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="videoOnly"
+                                    name="streamType"
+                                    value="video_only"
+                                >
+                                <label for="videoOnly">Create B-Roll</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Caption Mode</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="captionDefault"
+                                    name="captionMode"
+                                    value="Default"
+                                    checked
+                                >
+                                <label for="captionDefault">Default (60 second clips)</label>
+                            </div>
+                            <div class="radio-option" id="captionAIOption">
+                                <input
+                                    type="radio"
+                                    id="captionAI"
+                                    name="captionMode"
+                                    value="AI"
+                                >
+                                <label for="captionAI">AI Generated</label>
+                            </div>
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="captionCustom"
+                                    name="captionMode"
+                                    value="Custom"
+                                >
+                                <label for="captionCustom">Custom Timestamps</label>
+                            </div>
+                        </div>
+
+                        <!-- Custom Timestamp Inputs -->
+                        <div class="timestamp-inputs" id="timestampInputs">
+                            <div id="timestampClipsContainer">
+                                <!-- Clips will be added here dynamically -->
+                            </div>
+                            <button type="button" class="timestamp-add-btn" id="addTimestampBtn">
+                                + Add Another Clip
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Submit</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
         const form = document.getElementById('splitterForm');
         const submitBtn = document.getElementById('submitBtn');
-        const successMessage = document.getElementById('successMessage');
         const urlError = document.getElementById('urlError');
+        const videoUrlInput = document.getElementById('videoUrl');
+        const videoPreviewSection = document.getElementById('videoPreviewSection');
+        const videoPreviewContainer = document.getElementById('videoPreviewContainer');
+        const timestampInputs = document.getElementById('timestampInputs');
+        const timestampClipsContainer = document.getElementById('timestampClipsContainer');
+        const addTimestampBtn = document.getElementById('addTimestampBtn');
+        const captionAIOption = document.getElementById('captionAIOption');
+
+        let clipCount = 0;
+        const MAX_CLIPS = 10;
 
         // Generate unique job ID
         function generateJobId() {
@@ -230,16 +473,156 @@
             return null;
         }
 
+        // Show/hide YouTube preview
+        function updateVideoPreview() {
+            const url = videoUrlInput.value.trim();
+            const videoId = extractYouTubeID(url);
+
+            if (videoId) {
+                videoPreviewSection.style.display = 'block';
+                videoPreviewContainer.innerHTML = `
+                    <iframe
+                        src="https://www.youtube.com/embed/${videoId}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                `;
+            } else {
+                videoPreviewSection.style.display = 'none';
+                videoPreviewContainer.innerHTML = `
+                    <div class="video-preview-placeholder">
+                        Enter a YouTube URL to see preview
+                    </div>
+                `;
+            }
+        }
+
+        // Show/hide AI option based on stream type
+        function updateCaptionModeOptions() {
+            const streamType = document.querySelector('input[name="streamType"]:checked').value;
+
+            if (streamType === 'video_audio') {
+                captionAIOption.style.display = 'flex';
+            } else {
+                captionAIOption.style.display = 'none';
+                // If AI was selected and we switch to B-Roll, switch to Default
+                if (document.getElementById('captionAI').checked) {
+                    document.getElementById('captionDefault').checked = true;
+                    timestampInputs.classList.remove('active');
+                }
+            }
+        }
+
+        // Add timestamp clip input
+        function addTimestampClip() {
+            if (clipCount >= MAX_CLIPS) return;
+
+            clipCount++;
+            const clipDiv = document.createElement('div');
+            clipDiv.className = 'timestamp-clip';
+            clipDiv.dataset.clipIndex = clipCount;
+            clipDiv.innerHTML = `
+                <div class="timestamp-clip-header">
+                    <span class="timestamp-clip-title">Clip ${clipCount}</span>
+                    <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                </div>
+                <div class="timestamp-row">
+                    <div class="timestamp-input-group">
+                        <label>Start Time</label>
+                        <input type="text" name="clip${clipCount}_start" placeholder="0:00 or 0:00:00" required>
+                    </div>
+                    <div class="timestamp-input-group">
+                        <label>End Time</label>
+                        <input type="text" name="clip${clipCount}_end" placeholder="1:30 or 0:01:30" required>
+                    </div>
+                </div>
+            `;
+            timestampClipsContainer.appendChild(clipDiv);
+
+            // Disable add button if max reached
+            if (clipCount >= MAX_CLIPS) {
+                addTimestampBtn.disabled = true;
+                addTimestampBtn.textContent = 'Maximum 10 clips reached';
+            }
+        }
+
+        // Remove timestamp clip input
+        window.removeTimestampClip = function(index) {
+            const clipDiv = document.querySelector(`[data-clip-index="${index}"]`);
+            if (clipDiv) {
+                clipDiv.remove();
+                clipCount--;
+
+                // Re-enable add button
+                addTimestampBtn.disabled = false;
+                addTimestampBtn.textContent = '+ Add Another Clip';
+
+                // Renumber remaining clips
+                const clips = timestampClipsContainer.querySelectorAll('.timestamp-clip');
+                clips.forEach((clip, idx) => {
+                    const newIndex = idx + 1;
+                    clip.dataset.clipIndex = newIndex;
+                    clip.querySelector('.timestamp-clip-title').textContent = `Clip ${newIndex}`;
+
+                    const inputs = clip.querySelectorAll('input');
+                    inputs[0].name = `clip${newIndex}_start`;
+                    inputs[1].name = `clip${newIndex}_end`;
+
+                    const removeBtn = clip.querySelector('.timestamp-remove-btn');
+                    removeBtn.setAttribute('onclick', `removeTimestampClip(${newIndex})`);
+                });
+                clipCount = clips.length;
+            }
+        };
+
+        // Toggle custom timestamp inputs
+        function updateTimestampInputs() {
+            const captionMode = document.querySelector('input[name="captionMode"]:checked').value;
+
+            if (captionMode === 'Custom') {
+                timestampInputs.classList.add('active');
+                // Add first clip if none exist
+                if (clipCount === 0) {
+                    addTimestampClip();
+                }
+            } else {
+                timestampInputs.classList.remove('active');
+            }
+        }
+
+        // Event listeners
+        videoUrlInput.addEventListener('input', () => {
+            const url = videoUrlInput.value.trim();
+            if (url && !extractYouTubeID(url)) {
+                urlError.style.display = 'block';
+            } else {
+                urlError.style.display = 'none';
+            }
+            updateVideoPreview();
+        });
+
+        document.querySelectorAll('input[name="streamType"]').forEach(radio => {
+            radio.addEventListener('change', updateCaptionModeOptions);
+        });
+
+        document.querySelectorAll('input[name="captionMode"]').forEach(radio => {
+            radio.addEventListener('change', updateTimestampInputs);
+        });
+
+        addTimestampBtn.addEventListener('click', addTimestampClip);
+
+        // Form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             // Reset error states
             urlError.style.display = 'none';
-            successMessage.style.display = 'none';
 
             // Get form values
-            const videoUrl = document.getElementById('videoUrl').value.trim();
+            const videoUrl = videoUrlInput.value.trim();
             const streamType = document.querySelector('input[name="streamType"]:checked').value;
+            const captionMode = document.querySelector('input[name="captionMode"]:checked').value;
 
             // Extract YouTube video ID
             const videoId = extractYouTubeID(videoUrl);
@@ -257,8 +640,35 @@
                 job_id: jobId,
                 video_id: videoId,
                 video_url: videoUrl,
-                stream_type: streamType
+                stream_type: streamType,
+                caption_mode: captionMode
             };
+
+            // Add custom timestamps if Custom mode is selected
+            if (captionMode === 'Custom') {
+                const customTimestamps = [];
+                const clips = timestampClipsContainer.querySelectorAll('.timestamp-clip');
+
+                clips.forEach((clip, index) => {
+                    const startInput = clip.querySelector(`input[name="clip${index + 1}_start"]`);
+                    const endInput = clip.querySelector(`input[name="clip${index + 1}_end"]`);
+
+                    if (startInput.value && endInput.value) {
+                        customTimestamps.push({
+                            start: startInput.value.trim(),
+                            end: endInput.value.trim(),
+                            reason: "Custom timestamp chosen by user"
+                        });
+                    }
+                });
+
+                if (customTimestamps.length === 0) {
+                    alert('Please add at least one timestamp for custom mode');
+                    return;
+                }
+
+                payload.custom_timestamps = customTimestamps;
+            }
 
             // Disable button during submission
             submitBtn.disabled = true;
@@ -285,15 +695,8 @@
             }
         });
 
-        // Real-time URL validation
-        document.getElementById('videoUrl').addEventListener('input', (e) => {
-            const url = e.target.value.trim();
-            if (url && !extractYouTubeID(url)) {
-                urlError.style.display = 'block';
-            } else {
-                urlError.style.display = 'none';
-            }
-        });
+        // Initialize
+        updateCaptionModeOptions();
     </script>
 </body>
 </html>
