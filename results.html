@@ -630,6 +630,14 @@
                             Your browser does not support the video tag.
                         </video>
                     </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <div style="font-weight: 600; font-size: 18px; color: #333; margin-bottom: 10px;">
+                            Current Time: <span id="currentTimestamp" style="color: #667eea;">0:00</span>
+                        </div>
+                        <div style="font-size: 12px; color: #999; margin-bottom: 10px;">
+                            Preview shows first 5 minutes • Use player controls to find exact moments
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -814,8 +822,28 @@
             // Show original video player if URL is available
             if (videoUrl) {
                 document.getElementById('originalVideoSection').style.display = 'block';
-                document.getElementById('videoSource').src = videoUrl;
+
+                // Construct preview URL using the /preview endpoint
+                let previewUrl = `${API_BASE_URL}/preview?video_url=${encodeURIComponent(videoUrl)}`;
+                if (audioUrl) {
+                    previewUrl += `&audio_url=${encodeURIComponent(audioUrl)}`;
+                }
+                // Request first 5 minutes for preview
+                previewUrl += '&start=00:00:00&duration=00:05:00';
+
+                document.getElementById('videoSource').src = previewUrl;
                 document.getElementById('originalVideoPlayer').load();
+
+                // Add timestamp display listener
+                const videoPlayer = document.getElementById('originalVideoPlayer');
+                videoPlayer.addEventListener('timeupdate', () => {
+                    const currentSeconds = Math.floor(videoPlayer.currentTime);
+                    const timestamp = secondsToTimestamp(currentSeconds);
+                    const timestampDisplay = document.getElementById('currentTimestamp');
+                    if (timestampDisplay) {
+                        timestampDisplay.textContent = timestamp;
+                    }
+                });
             }
 
             // Check if any clips have custom timestamps
@@ -890,22 +918,44 @@
                             <div class="timestamp-adjuster">
                                 <div class="timestamp-control">
                                     <div class="timestamp-label">Start Time</div>
+                                    <div class="timestamp-display" style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                                        Original: <span style="font-weight: 600;">${clip.start_time}</span>
+                                        → New: <span style="font-weight: 600; color: #667eea;" id="new-start-${index}">${clip.start_time}</span>
+                                    </div>
                                     <div class="timestamp-buttons">
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', -10)">-10s</button>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', -5)">-5s</button>
-                                        <div class="timestamp-value" id="start-time-${index}">${clip.start_time}</div>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', 5)">+5s</button>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', 10)">+10s</button>
+                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', 'subtract')" title="Subtract seconds">−</button>
+                                        <input
+                                            type="number"
+                                            id="start-seconds-${index}"
+                                            value="5"
+                                            min="1"
+                                            max="60"
+                                            style="width: 50px; text-align: center; border: 2px solid #667eea; border-radius: 4px; padding: 4px; font-weight: 600;"
+                                            title="Seconds to adjust"
+                                        >
+                                        <span style="font-size: 12px; color: #666;">sec</span>
+                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'start', 'add')" title="Add seconds">+</button>
                                     </div>
                                 </div>
                                 <div class="timestamp-control">
                                     <div class="timestamp-label">End Time</div>
+                                    <div class="timestamp-display" style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                                        Original: <span style="font-weight: 600;">${clip.end_time}</span>
+                                        → New: <span style="font-weight: 600; color: #667eea;" id="new-end-${index}">${clip.end_time}</span>
+                                    </div>
                                     <div class="timestamp-buttons">
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', -10)">-10s</button>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', -5)">-5s</button>
-                                        <div class="timestamp-value" id="end-time-${index}">${clip.end_time}</div>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', 5)">+5s</button>
-                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', 10)">+10s</button>
+                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', 'subtract')" title="Subtract seconds">−</button>
+                                        <input
+                                            type="number"
+                                            id="end-seconds-${index}"
+                                            value="5"
+                                            min="1"
+                                            max="60"
+                                            style="width: 50px; text-align: center; border: 2px solid #667eea; border-radius: 4px; padding: 4px; font-weight: 600;"
+                                            title="Seconds to adjust"
+                                        >
+                                        <span style="font-size: 12px; color: #666;">sec</span>
+                                        <button class="timestamp-btn" onclick="adjustTimestamp(${index}, 'end', 'add')" title="Add seconds">+</button>
                                     </div>
                                 </div>
                             </div>
@@ -984,23 +1034,30 @@
             }
         }
 
-        // Adjust timestamp for a clip
-        function adjustTimestamp(index, type, seconds) {
+        // Adjust timestamp for a clip (with custom input)
+        function adjustTimestamp(index, type, direction) {
             const adjustment = timestampAdjustments[index];
             if (!adjustment) return;
 
+            // Get the custom seconds value from the input field
+            const secondsInput = document.getElementById(`${type}-seconds-${index}`);
+            const seconds = parseInt(secondsInput.value) || 5;
+
+            // Calculate the amount to add/subtract
+            const amount = direction === 'add' ? seconds : -seconds;
+
             if (type === 'start') {
-                adjustment.startAdjustment += seconds;
+                adjustment.startAdjustment += amount;
                 const originalSeconds = timestampToSeconds(adjustment.originalStart);
-                const newSeconds = originalSeconds + adjustment.startAdjustment;
+                const newSeconds = Math.max(0, originalSeconds + adjustment.startAdjustment);
                 const newTimestamp = secondsToTimestamp(newSeconds);
-                document.getElementById(`start-time-${index}`).textContent = newTimestamp;
+                document.getElementById(`new-start-${index}`).textContent = newTimestamp;
             } else if (type === 'end') {
-                adjustment.endAdjustment += seconds;
+                adjustment.endAdjustment += amount;
                 const originalSeconds = timestampToSeconds(adjustment.originalEnd);
-                const newSeconds = originalSeconds + adjustment.endAdjustment;
+                const newSeconds = Math.max(0, originalSeconds + adjustment.endAdjustment);
                 const newTimestamp = secondsToTimestamp(newSeconds);
-                document.getElementById(`end-time-${index}`).textContent = newTimestamp;
+                document.getElementById(`new-end-${index}`).textContent = newTimestamp;
             }
         }
 
@@ -1034,7 +1091,8 @@
                 const response = await fetch(`${API_BASE_URL}/split-video`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'Z6Sp2X6Zf8Br1npdLg9ymeqOHrSyNLPpIraK4VGa44Y'
                     },
                     body: JSON.stringify(payload)
                 });
