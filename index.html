@@ -41,9 +41,17 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 30px;
             align-items: start;
+            max-width: 600px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .main-content.with-video {
+            grid-template-columns: 1.2fr 1fr;
+            max-width: 1400px;
         }
 
         .video-preview-section {
@@ -477,9 +485,11 @@
         function updateVideoPreview() {
             const url = videoUrlInput.value.trim();
             const videoId = extractYouTubeID(url);
+            const mainContent = document.querySelector('.main-content');
 
             if (videoId) {
                 videoPreviewSection.style.display = 'block';
+                mainContent.classList.add('with-video');
                 videoPreviewContainer.innerHTML = `
                     <iframe
                         src="https://www.youtube.com/embed/${videoId}"
@@ -490,6 +500,7 @@
                 `;
             } else {
                 videoPreviewSection.style.display = 'none';
+                mainContent.classList.remove('with-video');
                 videoPreviewContainer.innerHTML = `
                     <div class="video-preview-placeholder">
                         Enter a YouTube URL to see preview

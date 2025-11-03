@@ -678,8 +678,8 @@
     <script>
         const API_BASE_URL = 'https://video-splitter-api-production.up.railway.app';
         const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
-        const POLL_INTERVAL = 30000; // 30 seconds
-        const MAX_POLLS = 40; // 20 minutes total (40 polls × 30s = 1200s = 20min)
+        const POLL_INTERVAL = 10000; // 10 seconds
+        const MAX_POLLS = 120; // 20 minutes total (120 polls × 10s = 1200s = 20min)
 
         let jobId = '';
         let pollCount = 0;
