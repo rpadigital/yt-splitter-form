@@ -166,36 +166,26 @@
             </div>
 
             <div class="form-group">
-                <label for="overlay">Video Overlay</label>
-                <select id="overlay" name="overlay" required>
-                    <option value="">Select an overlay...</option>
-                    <option value="minecraft">Minecraft</option>
-                    <option value="subway_surfer">Subway Surfer</option>
-                </select>
-            </div>
-
-
-            <div class="form-group">
                 <label>Stream Type</label>
                 <div class="radio-group">
-                    <div class="radio-option">
-                        <input
-                            type="radio"
-                            id="videoOnly"
-                            name="streamType"
-                            value="video_only"
-                            checked
-                        >
-                        <label for="videoOnly">Video Only</label>
-                    </div>
                     <div class="radio-option">
                         <input
                             type="radio"
                             id="videoAudio"
                             name="streamType"
                             value="video_audio"
+                            checked
                         >
-                        <label for="videoAudio">Video + Audio</label>
+                        <label for="videoAudio">Create Video + Audio Clips</label>
+                    </div>
+                    <div class="radio-option">
+                        <input
+                            type="radio"
+                            id="videoOnly"
+                            name="streamType"
+                            value="video_only"
+                        >
+                        <label for="videoOnly">Create B-Roll</label>
                     </div>
                 </div>
             </div>
@@ -249,7 +239,6 @@
 
             // Get form values
             const videoUrl = document.getElementById('videoUrl').value.trim();
-            const overlay = document.getElementById('overlay').value;
             const streamType = document.querySelector('input[name="streamType"]:checked').value;
 
             // Extract YouTube video ID
@@ -268,7 +257,6 @@
                 job_id: jobId,
                 video_id: videoId,
                 video_url: videoUrl,
-                overlay: overlay,
                 stream_type: streamType
             };
 
