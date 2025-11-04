@@ -839,7 +839,24 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Font Family</label>
-                            <input type="text" class="input-field" id="subFontFamily" oninput="updateCanvas()">
+                            <select class="input-field" id="subFontFamily" oninput="updateCanvas()">
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Impact">Impact</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Permanent Marker" selected>Permanent Marker</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Lato">Lato</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Oswald">Oswald</option>
+                                <option value="Raleway">Raleway</option>
+                                <option value="Poppins">Poppins</option>
+                            </select>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Font Weight</label>
@@ -858,6 +875,10 @@
                                 <option value="left">Left</option>
                                 <option value="right">Right</option>
                             </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Max Words Per Line</label>
+                            <input type="number" class="input-field" id="subMaxWordsPerLine" value="1" min="1" max="10" data-tooltip="Maximum words per line">
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
@@ -1298,6 +1319,7 @@
             document.getElementById('subFontFamily').value = config.subtitles.fontFamily;
             document.getElementById('subFontWeight').value = config.subtitles.fontWeight;
             document.getElementById('subAlignment').value = config.subtitles.alignment;
+            document.getElementById('subMaxWordsPerLine').value = config.subtitles.maxWordsPerLine || 1;
             document.getElementById('subZIndex').value = config.subtitles.zIndex;
             document.getElementById('subTextColor').value = config.subtitles.textColor;
             document.getElementById('subOutlineColor').value = config.subtitles.outlineColor;
@@ -1352,6 +1374,7 @@
             config.subtitles.fontFamily = document.getElementById('subFontFamily').value;
             config.subtitles.fontWeight = document.getElementById('subFontWeight').value;
             config.subtitles.alignment = document.getElementById('subAlignment').value;
+            config.subtitles.maxWordsPerLine = parseInt(document.getElementById('subMaxWordsPerLine').value) || 1;
             config.subtitles.zIndex = parseInt(document.getElementById('subZIndex').value);
             config.subtitles.textColor = document.getElementById('subTextColor').value;
             config.subtitles.outlineColor = document.getElementById('subOutlineColor').value;
