@@ -325,7 +325,7 @@
             <h1>Video Position Editor</h1>
             <div class="job-id">Job ID: <span id="jobIdDisplay"></span></div>
             <div class="clip-counter">
-                Clip <span id="currentClipNum">1</span> of <span id="totalClipsNum">0</span>
+                Clip <span id="currentClipNum">1</span> of <span id="totalClipsNum">0</span> • Duration: <span id="currentClipDuration">0.0s</span>
             </div>
         </div>
 
@@ -371,6 +371,64 @@
                     </div>
                 </div>
 
+                <!-- Intro/Outro Scenes -->
+                <div class="layer-controls">
+                    <div class="layer-title">
+                        <div style="display: flex; align-items: center;">
+                            <div class="layer-indicator" style="background: rgba(255, 193, 7, 0.5);"></div>
+                            Intro / Outro Scenes (Global)
+                        </div>
+                    </div>
+
+                    <!-- Intro Scene -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" id="enableIntro" onchange="toggleIntroOutro()" style="margin-right: 8px; width: 18px; height: 18px;">
+                            <span style="font-weight: 600; color: #333;">Add Intro Scene</span>
+                        </label>
+                        <div id="introControls" style="display: none;">
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <label class="input-label">Intro Video URL</label>
+                                <input type="text" class="input-field" id="introVideoUrl" placeholder="https://example.com/intro.mp4">
+                            </div>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label class="input-label">Start Time (s)</label>
+                                    <input type="number" class="input-field" id="introStartTime" value="0" step="0.1" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">End Time (s)</label>
+                                    <input type="number" class="input-field" id="introEndTime" value="5" step="0.1" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Outro Scene -->
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" id="enableOutro" onchange="toggleIntroOutro()" style="margin-right: 8px; width: 18px; height: 18px;">
+                            <span style="font-weight: 600; color: #333;">Add Outro Scene</span>
+                        </label>
+                        <div id="outroControls" style="display: none;">
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <label class="input-label">Outro Video URL</label>
+                                <input type="text" class="input-field" id="outroVideoUrl" placeholder="https://example.com/outro.mp4">
+                            </div>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label class="input-label">Start Time (s)</label>
+                                    <input type="number" class="input-field" id="outroStartTime" value="0" step="0.1" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">End Time (s)</label>
+                                    <input type="number" class="input-field" id="outroEndTime" value="5" step="0.1" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Main Video Layer -->
                 <div class="layer-controls">
                     <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
@@ -396,6 +454,42 @@
                         <div class="input-group">
                             <label class="input-label">Height</label>
                             <input type="number" class="input-field" id="mainHeight" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Z-Index</label>
+                            <input type="number" class="input-field" id="mainZIndex" value="0" min="-99" max="99">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Trim Video</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Start Time (s)</label>
+                                <input type="number" class="input-field" id="mainStartTime" value="0" step="0.1" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">End Time (s)</label>
+                                <input type="number" class="input-field" id="mainEndTime" value="0" step="0.1" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Audio</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Volume</label>
+                                <input type="range" class="input-field" id="mainVolume" min="0" max="1" step="0.1" value="1" style="padding: 0;">
+                                <span id="mainVolumeValue" style="font-size: 12px; color: #666;">100%</span>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Mute</label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="mainMute" style="width: 18px; height: 18px;">
+                                    <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -426,6 +520,53 @@
                             <label class="input-label">Height</label>
                             <input type="number" class="input-field" id="bgHeight" oninput="updateCanvas()">
                         </div>
+                        <div class="input-group">
+                            <label class="input-label">Z-Index</label>
+                            <input type="number" class="input-field" id="bgZIndex" value="-1" min="-99" max="99">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Trim Video</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Start Time (s)</label>
+                                <input type="number" class="input-field" id="bgStartTime" value="0" step="0.1" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">End Time (s)</label>
+                                <input type="number" class="input-field" id="bgEndTime" value="0" step="0.1" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Audio</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Volume</label>
+                                <input type="range" class="input-field" id="bgVolume" min="0" max="1" step="0.1" value="0.3" style="padding: 0;">
+                                <span id="bgVolumeValue" style="font-size: 12px; color: #666;">30%</span>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Mute</label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="bgMute" style="width: 18px; height: 18px;">
+                                    <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Visual Effects</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Opacity</label>
+                                <input type="range" class="input-field" id="bgOpacity" min="0" max="1" step="0.1" value="1" style="padding: 0;">
+                                <span id="bgOpacityValue" style="font-size: 12px; color: #666;">100%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -455,6 +596,55 @@
                             <label class="input-label">Font Family</label>
                             <input type="text" class="input-field" id="subFontFamily" oninput="updateCanvas()">
                         </div>
+                        <div class="input-group">
+                            <label class="input-label">Font Weight</label>
+                            <select class="input-field" id="subFontWeight">
+                                <option value="normal">Normal</option>
+                                <option value="bold">Bold</option>
+                                <option value="700">700</option>
+                                <option value="800">800</option>
+                                <option value="900">900</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Alignment</label>
+                            <select class="input-field" id="subAlignment">
+                                <option value="center">Center</option>
+                                <option value="left">Left</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Z-Index</label>
+                            <input type="number" class="input-field" id="subZIndex" value="1" min="-99" max="99">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Colors</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Text Color</label>
+                                <input type="color" class="input-field" id="subTextColor" value="#FFFFFF" style="height: 40px;">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Outline Color</label>
+                                <input type="color" class="input-field" id="subOutlineColor" value="#000000" style="height: 40px;">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Outline Width</label>
+                                <input type="number" class="input-field" id="subOutlineWidth" value="10" min="0" max="20">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Background Color</label>
+                                <input type="color" class="input-field" id="subBackgroundColor" value="#000000" style="height: 40px;">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Background Opacity</label>
+                                <input type="range" class="input-field" id="subBackgroundOpacity" min="0" max="1" step="0.1" value="0.7" style="padding: 0;">
+                                <span id="subBackgroundOpacityValue" style="font-size: 12px; color: #666;">70%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -478,15 +668,43 @@
 
         // Default positioning values
         const DEFAULTS = {
-            mainVideo: { width: 1826, height: 1045, x: -306, y: -23 },
-            background: { width: 1800, height: 978, x: -292, y: 1021 },
+            mainVideo: {
+                width: 1826,
+                height: 1045,
+                x: -306,
+                y: -23,
+                zIndex: 0,
+                startTime: 0,
+                endTime: 0,
+                volume: 1.0,
+                mute: false
+            },
+            background: {
+                width: 1800,
+                height: 978,
+                x: -292,
+                y: 1021,
+                zIndex: -1,
+                startTime: 0,
+                endTime: 0,
+                volume: 0.3,
+                mute: false,
+                opacity: 1.0
+            },
             subtitles: {
                 fontFamily: "Permanent Marker",
                 maxWordsPerLine: 1,
                 fontSize: 125,
                 x: 540,
                 y: 1000,
-                outlineWidth: 10
+                outlineWidth: 10,
+                textColor: "#FFFFFF",
+                outlineColor: "#000000",
+                backgroundColor: "#000000",
+                backgroundOpacity: 0.7,
+                fontWeight: "bold",
+                alignment: "center",
+                zIndex: 1
             }
         };
 
@@ -518,6 +736,50 @@
                 updateScale();
                 updateCanvas();
             }, 100);
+        }
+
+        // Toggle intro/outro controls visibility
+        function toggleIntroOutro() {
+            const enableIntro = document.getElementById('enableIntro').checked;
+            const enableOutro = document.getElementById('enableOutro').checked;
+            document.getElementById('introControls').style.display = enableIntro ? 'block' : 'none';
+            document.getElementById('outroControls').style.display = enableOutro ? 'block' : 'none';
+        }
+
+        // Update volume percentage displays
+        function updateVolumeDisplays() {
+            const mainVolume = document.getElementById('mainVolume');
+            const bgVolume = document.getElementById('bgVolume');
+            const bgOpacity = document.getElementById('bgOpacity');
+            const subBackgroundOpacity = document.getElementById('subBackgroundOpacity');
+
+            if (mainVolume) {
+                document.getElementById('mainVolumeValue').textContent = Math.round(mainVolume.value * 100) + '%';
+                mainVolume.addEventListener('input', (e) => {
+                    document.getElementById('mainVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
+                });
+            }
+
+            if (bgVolume) {
+                document.getElementById('bgVolumeValue').textContent = Math.round(bgVolume.value * 100) + '%';
+                bgVolume.addEventListener('input', (e) => {
+                    document.getElementById('bgVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
+                });
+            }
+
+            if (bgOpacity) {
+                document.getElementById('bgOpacityValue').textContent = Math.round(bgOpacity.value * 100) + '%';
+                bgOpacity.addEventListener('input', (e) => {
+                    document.getElementById('bgOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
+                });
+            }
+
+            if (subBackgroundOpacity) {
+                document.getElementById('subBackgroundOpacityValue').textContent = Math.round(subBackgroundOpacity.value * 100) + '%';
+                subBackgroundOpacity.addEventListener('input', (e) => {
+                    document.getElementById('subBackgroundOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
+                });
+            }
         }
 
         // Initialize
@@ -554,6 +816,9 @@
 
             // Setup resize listener
             window.addEventListener('resize', handleResize);
+
+            // Setup volume display listeners
+            updateVolumeDisplays();
         });
 
         // Load clip configuration
@@ -564,24 +829,49 @@
 
             // Update UI
             document.getElementById('currentClipNum').textContent = index + 1;
+            document.getElementById('currentClipDuration').textContent = (clip.duration || 0).toFixed(1) + 's';
             document.getElementById('prevBtn').disabled = index === 0;
             document.getElementById('nextBtn').disabled = index === editorData.selected_clips.length - 1;
 
-            // Update input fields
+            // Update main video fields
             document.getElementById('mainX').value = config.mainVideo.x;
             document.getElementById('mainY').value = config.mainVideo.y;
             document.getElementById('mainWidth').value = config.mainVideo.width;
             document.getElementById('mainHeight').value = config.mainVideo.height;
+            document.getElementById('mainZIndex').value = config.mainVideo.zIndex;
+            document.getElementById('mainStartTime').value = config.mainVideo.startTime;
+            document.getElementById('mainEndTime').value = config.mainVideo.endTime || clip.duration || 0;
+            document.getElementById('mainVolume').value = config.mainVideo.volume;
+            document.getElementById('mainMute').checked = config.mainVideo.mute;
 
+            // Update background video fields
             document.getElementById('bgX').value = config.background.x;
             document.getElementById('bgY').value = config.background.y;
             document.getElementById('bgWidth').value = config.background.width;
             document.getElementById('bgHeight').value = config.background.height;
+            document.getElementById('bgZIndex').value = config.background.zIndex;
+            document.getElementById('bgStartTime').value = config.background.startTime;
+            document.getElementById('bgEndTime').value = config.background.endTime || clip.duration || 0;
+            document.getElementById('bgVolume').value = config.background.volume;
+            document.getElementById('bgMute').checked = config.background.mute;
+            document.getElementById('bgOpacity').value = config.background.opacity;
 
+            // Update subtitle fields
             document.getElementById('subX').value = config.subtitles.x;
             document.getElementById('subY').value = config.subtitles.y;
             document.getElementById('subFontSize').value = config.subtitles.fontSize;
             document.getElementById('subFontFamily').value = config.subtitles.fontFamily;
+            document.getElementById('subFontWeight').value = config.subtitles.fontWeight;
+            document.getElementById('subAlignment').value = config.subtitles.alignment;
+            document.getElementById('subZIndex').value = config.subtitles.zIndex;
+            document.getElementById('subTextColor').value = config.subtitles.textColor;
+            document.getElementById('subOutlineColor').value = config.subtitles.outlineColor;
+            document.getElementById('subOutlineWidth').value = config.subtitles.outlineWidth;
+            document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
+            document.getElementById('subBackgroundOpacity').value = config.subtitles.backgroundOpacity;
+
+            // Update volume displays
+            updateVolumeDisplays();
 
             // Load video preview
             const videoPreview = document.getElementById('videoPreview');
@@ -596,20 +886,42 @@
         function saveCurrentClip() {
             const config = clipConfigurations[currentClipIndex];
 
+            // Save main video config
             config.mainVideo.x = parseInt(document.getElementById('mainX').value);
             config.mainVideo.y = parseInt(document.getElementById('mainY').value);
             config.mainVideo.width = parseInt(document.getElementById('mainWidth').value);
             config.mainVideo.height = parseInt(document.getElementById('mainHeight').value);
+            config.mainVideo.zIndex = parseInt(document.getElementById('mainZIndex').value);
+            config.mainVideo.startTime = parseFloat(document.getElementById('mainStartTime').value);
+            config.mainVideo.endTime = parseFloat(document.getElementById('mainEndTime').value);
+            config.mainVideo.volume = parseFloat(document.getElementById('mainVolume').value);
+            config.mainVideo.mute = document.getElementById('mainMute').checked;
 
+            // Save background video config
             config.background.x = parseInt(document.getElementById('bgX').value);
             config.background.y = parseInt(document.getElementById('bgY').value);
             config.background.width = parseInt(document.getElementById('bgWidth').value);
             config.background.height = parseInt(document.getElementById('bgHeight').value);
+            config.background.zIndex = parseInt(document.getElementById('bgZIndex').value);
+            config.background.startTime = parseFloat(document.getElementById('bgStartTime').value);
+            config.background.endTime = parseFloat(document.getElementById('bgEndTime').value);
+            config.background.volume = parseFloat(document.getElementById('bgVolume').value);
+            config.background.mute = document.getElementById('bgMute').checked;
+            config.background.opacity = parseFloat(document.getElementById('bgOpacity').value);
 
+            // Save subtitle config
             config.subtitles.x = parseInt(document.getElementById('subX').value);
             config.subtitles.y = parseInt(document.getElementById('subY').value);
             config.subtitles.fontSize = parseInt(document.getElementById('subFontSize').value);
             config.subtitles.fontFamily = document.getElementById('subFontFamily').value;
+            config.subtitles.fontWeight = document.getElementById('subFontWeight').value;
+            config.subtitles.alignment = document.getElementById('subAlignment').value;
+            config.subtitles.zIndex = parseInt(document.getElementById('subZIndex').value);
+            config.subtitles.textColor = document.getElementById('subTextColor').value;
+            config.subtitles.outlineColor = document.getElementById('subOutlineColor').value;
+            config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
+            config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
+            config.subtitles.backgroundOpacity = parseFloat(document.getElementById('subBackgroundOpacity').value);
         }
 
         // Navigation
@@ -702,17 +1014,37 @@
                 document.getElementById('mainY').value = DEFAULTS.mainVideo.y;
                 document.getElementById('mainWidth').value = DEFAULTS.mainVideo.width;
                 document.getElementById('mainHeight').value = DEFAULTS.mainVideo.height;
+                document.getElementById('mainZIndex').value = DEFAULTS.mainVideo.zIndex;
+                document.getElementById('mainStartTime').value = DEFAULTS.mainVideo.startTime;
+                document.getElementById('mainEndTime').value = DEFAULTS.mainVideo.endTime;
+                document.getElementById('mainVolume').value = DEFAULTS.mainVideo.volume;
+                document.getElementById('mainMute').checked = DEFAULTS.mainVideo.mute;
             } else if (layer === 'background') {
                 document.getElementById('bgX').value = DEFAULTS.background.x;
                 document.getElementById('bgY').value = DEFAULTS.background.y;
                 document.getElementById('bgWidth').value = DEFAULTS.background.width;
                 document.getElementById('bgHeight').value = DEFAULTS.background.height;
+                document.getElementById('bgZIndex').value = DEFAULTS.background.zIndex;
+                document.getElementById('bgStartTime').value = DEFAULTS.background.startTime;
+                document.getElementById('bgEndTime').value = DEFAULTS.background.endTime;
+                document.getElementById('bgVolume').value = DEFAULTS.background.volume;
+                document.getElementById('bgMute').checked = DEFAULTS.background.mute;
+                document.getElementById('bgOpacity').value = DEFAULTS.background.opacity;
             } else if (layer === 'subtitles') {
                 document.getElementById('subX').value = DEFAULTS.subtitles.x;
                 document.getElementById('subY').value = DEFAULTS.subtitles.y;
                 document.getElementById('subFontSize').value = DEFAULTS.subtitles.fontSize;
                 document.getElementById('subFontFamily').value = DEFAULTS.subtitles.fontFamily;
+                document.getElementById('subFontWeight').value = DEFAULTS.subtitles.fontWeight;
+                document.getElementById('subAlignment').value = DEFAULTS.subtitles.alignment;
+                document.getElementById('subZIndex').value = DEFAULTS.subtitles.zIndex;
+                document.getElementById('subTextColor').value = DEFAULTS.subtitles.textColor;
+                document.getElementById('subOutlineColor').value = DEFAULTS.subtitles.outlineColor;
+                document.getElementById('subOutlineWidth').value = DEFAULTS.subtitles.outlineWidth;
+                document.getElementById('subBackgroundColor').value = DEFAULTS.subtitles.backgroundColor;
+                document.getElementById('subBackgroundOpacity').value = DEFAULTS.subtitles.backgroundOpacity;
             }
+            updateVolumeDisplays();
             updateCanvas();
         }
 
@@ -805,9 +1137,99 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
 
+            // Get intro/outro configuration
+            const enableIntro = document.getElementById('enableIntro').checked;
+            const enableOutro = document.getElementById('enableOutro').checked;
+            const introConfig = enableIntro ? {
+                videoUrl: document.getElementById('introVideoUrl').value,
+                startTime: parseFloat(document.getElementById('introStartTime').value),
+                endTime: parseFloat(document.getElementById('introEndTime').value)
+            } : null;
+            const outroConfig = enableOutro ? {
+                videoUrl: document.getElementById('outroVideoUrl').value,
+                startTime: parseFloat(document.getElementById('outroStartTime').value),
+                endTime: parseFloat(document.getElementById('outroEndTime').value)
+            } : null;
+
             // Build payload for JSON2VIDEO
             const clips = editorData.selected_clips.map((clip, index) => {
                 const config = clipConfigurations[index];
+
+                // Build scenes array
+                const scenes = [];
+
+                // Add intro scene if enabled (only for first clip)
+                if (index === 0 && introConfig && introConfig.videoUrl) {
+                    scenes.push({
+                        elements: [{
+                            type: "video",
+                            src: introConfig.videoUrl,
+                            seek: introConfig.startTime,
+                            duration: introConfig.endTime - introConfig.startTime,
+                            resize: "cover"
+                        }]
+                    });
+                }
+
+                // Add main clip scene
+                scenes.push({
+                    background: {
+                        type: "video",
+                        src: `{{${editorData.b_roll_type}_video_url}}`,
+                        width: config.background.width,
+                        height: config.background.height,
+                        x: config.background.x,
+                        y: config.background.y,
+                        "z-index": config.background.zIndex,
+                        seek: config.background.startTime,
+                        duration: config.background.endTime - config.background.startTime || -1,
+                        volume: config.background.mute ? 0 : config.background.volume,
+                        opacity: config.background.opacity
+                    },
+                    layers: [
+                        {
+                            type: "video",
+                            src: clip.url,
+                            width: config.mainVideo.width,
+                            height: config.mainVideo.height,
+                            x: config.mainVideo.x,
+                            y: config.mainVideo.y,
+                            "z-index": config.mainVideo.zIndex,
+                            seek: config.mainVideo.startTime,
+                            duration: config.mainVideo.endTime - config.mainVideo.startTime || -1,
+                            volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
+                        }
+                    ],
+                    subtitles: {
+                        fontFamily: config.subtitles.fontFamily,
+                        maxWordsPerLine: config.subtitles.maxWordsPerLine || 1,
+                        fontSize: config.subtitles.fontSize,
+                        fontWeight: config.subtitles.fontWeight,
+                        textAlign: config.subtitles.alignment,
+                        x: config.subtitles.x,
+                        y: config.subtitles.y,
+                        color: config.subtitles.textColor,
+                        outlineColor: config.subtitles.outlineColor,
+                        outlineWidth: config.subtitles.outlineWidth,
+                        backgroundColor: config.subtitles.backgroundColor,
+                        backgroundOpacity: config.subtitles.backgroundOpacity,
+                        "z-index": config.subtitles.zIndex
+                    }
+                });
+
+                // Add outro scene if enabled (only for last clip)
+                if (index === editorData.selected_clips.length - 1 && outroConfig && outroConfig.videoUrl) {
+                    scenes.push({
+                        elements: [{
+                            type: "video",
+                            src: outroConfig.videoUrl,
+                            seek: outroConfig.startTime,
+                            duration: outroConfig.endTime - outroConfig.startTime,
+                            resize: "cover"
+                        }]
+                    });
+                }
+
                 return {
                     clip_url: clip.url,
                     clip_filename: clip.filename,
@@ -818,36 +1240,7 @@
                     json2video_config: {
                         resolution: "portrait",
                         quality: "high",
-                        scenes: [
-                            {
-                                background: {
-                                    type: "video",
-                                    src: `{{${editorData.b_roll_type}_video_url}}`, // Make.com will replace this
-                                    width: config.background.width,
-                                    height: config.background.height,
-                                    x: config.background.x,
-                                    y: config.background.y
-                                },
-                                layers: [
-                                    {
-                                        type: "video",
-                                        src: clip.url,
-                                        width: config.mainVideo.width,
-                                        height: config.mainVideo.height,
-                                        x: config.mainVideo.x,
-                                        y: config.mainVideo.y
-                                    }
-                                ],
-                                subtitles: {
-                                    fontFamily: config.subtitles.fontFamily,
-                                    maxWordsPerLine: config.subtitles.maxWordsPerLine || 1,
-                                    fontSize: config.subtitles.fontSize,
-                                    x: config.subtitles.x,
-                                    y: config.subtitles.y,
-                                    outlineWidth: config.subtitles.outlineWidth || 10
-                                }
-                            }
-                        ]
+                        scenes: scenes
                     }
                 };
             });
@@ -856,6 +1249,8 @@
                 job_id: editorData.job_id,
                 action: "create_final_videos",
                 b_roll_type: editorData.b_roll_type,
+                intro_enabled: enableIntro,
+                outro_enabled: enableOutro,
                 clips: clips
             };
 
