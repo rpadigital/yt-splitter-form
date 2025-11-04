@@ -310,6 +310,86 @@
             margin-top: 6px;
         }
 
+        .ai-generation-options {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .ai-button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ai-option-btn {
+            padding: 12px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-option-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .ai-option-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: white;
+            color: #999;
+            border-color: #ccc;
+        }
+
+        .ai-progress {
+            margin-top: 15px;
+        }
+
+        .ai-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .ai-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: progress-animation 2s ease-in-out infinite;
+        }
+
+        @keyframes progress-animation {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        .ai-progress-text {
+            text-align: center;
+            color: #667eea;
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .timestamp-reason {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f0f4ff;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #555;
+            font-style: italic;
+        }
+
         /* Mobile responsive */
         @media (max-width: 968px) {
             .main-content {
@@ -423,6 +503,26 @@
                             </div>
                         </div>
 
+                        <!-- AI Generation Options (shown when AI is selected) -->
+                        <div class="ai-generation-options" id="aiGenerationOptions" style="display: none; margin-top: 15px;">
+                            <div class="ai-button-group">
+                                <button type="button" class="ai-option-btn" id="generateNowBtn">
+                                    Generate Now
+                                </button>
+                                <button type="button" class="ai-option-btn" id="pregenerateBtn">
+                                    Pre-generate Timestamps
+                                </button>
+                            </div>
+
+                            <!-- Progress indicator -->
+                            <div class="ai-progress" id="aiProgress" style="display: none;">
+                                <div class="ai-progress-bar">
+                                    <div class="ai-progress-fill"></div>
+                                </div>
+                                <p class="ai-progress-text">Generating AI timestamps...</p>
+                            </div>
+                        </div>
+
                         <!-- Custom Timestamp Inputs -->
                         <div class="timestamp-inputs" id="timestampInputs">
                             <div id="timestampClipsContainer">
@@ -454,6 +554,7 @@
 
         let clipCount = 0;
         const MAX_CLIPS = 10;
+        const API_BASE_URL = 'https://video-splitter-api-production.up.railway.app';
 
         // Generate unique job ID
         function generateJobId() {
@@ -587,17 +688,65 @@
             }
         };
 
-        // Toggle custom timestamp inputs
+        // Populate timestamp UI with AI-generated timestamps
+        function populateTimestampsFromAI(timestamps) {
+            // Clear existing clips
+            timestampClipsContainer.innerHTML = '';
+            clipCount = 0;
+
+            // Add each AI-generated timestamp
+            timestamps.forEach((ts, index) => {
+                clipCount++;
+                const clipDiv = document.createElement('div');
+                clipDiv.className = 'timestamp-clip';
+                clipDiv.dataset.clipIndex = clipCount;
+                clipDiv.innerHTML = `
+                    <div class="timestamp-clip-header">
+                        <span class="timestamp-clip-title">Clip ${clipCount}</span>
+                        <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                    </div>
+                    <div class="timestamp-row">
+                        <div class="timestamp-input-group">
+                            <label>Start Time</label>
+                            <input type="text" name="clip${clipCount}_start" placeholder="0:00 or 0:00:00" value="${ts.start}" required>
+                        </div>
+                        <div class="timestamp-input-group">
+                            <label>End Time</label>
+                            <input type="text" name="clip${clipCount}_end" placeholder="1:30 or 0:01:30" value="${ts.end}" required>
+                        </div>
+                    </div>
+                    ${ts.reason ? `<div class="timestamp-reason">${ts.reason}</div>` : ''}
+                `;
+                timestampClipsContainer.appendChild(clipDiv);
+            });
+
+            // Update add button state
+            if (clipCount >= MAX_CLIPS) {
+                addTimestampBtn.disabled = true;
+                addTimestampBtn.textContent = 'Maximum 10 clips reached';
+            } else {
+                addTimestampBtn.disabled = false;
+                addTimestampBtn.textContent = '+ Add Another Clip';
+            }
+        }
+
+        // Toggle custom timestamp inputs and AI options
         function updateTimestampInputs() {
             const captionMode = document.querySelector('input[name="captionMode"]:checked').value;
+            const aiGenerationOptions = document.getElementById('aiGenerationOptions');
 
-            if (captionMode === 'Custom') {
+            if (captionMode === 'AI') {
+                aiGenerationOptions.style.display = 'block';
+                timestampInputs.classList.remove('active');
+            } else if (captionMode === 'Custom') {
+                aiGenerationOptions.style.display = 'none';
                 timestampInputs.classList.add('active');
                 // Add first clip if none exist
                 if (clipCount === 0) {
                     addTimestampClip();
                 }
             } else {
+                aiGenerationOptions.style.display = 'none';
                 timestampInputs.classList.remove('active');
             }
         }
@@ -622,6 +771,155 @@
         });
 
         addTimestampBtn.addEventListener('click', addTimestampClip);
+
+        // Handle "Generate Now" button click
+        document.getElementById('generateNowBtn').addEventListener('click', async () => {
+            // Validate URL
+            const videoUrl = videoUrlInput.value.trim();
+            const videoId = extractYouTubeID(videoUrl);
+
+            if (!videoId) {
+                urlError.style.display = 'block';
+                urlError.textContent = 'Please enter a valid YouTube URL';
+                return;
+            }
+
+            // Generate job ID
+            const jobId = generateJobId();
+            const streamType = document.querySelector('input[name="streamType"]:checked').value;
+
+            // Prepare payload for immediate AI generation
+            const payload = {
+                job_id: jobId,
+                video_id: videoId,
+                video_url: videoUrl,
+                stream_type: streamType,
+                caption_mode: "AI"  // No custom_timestamps - Make.com handles everything
+            };
+
+            // Disable button
+            const generateNowBtn = document.getElementById('generateNowBtn');
+            generateNowBtn.disabled = true;
+            generateNowBtn.textContent = 'Submitting...';
+
+            try {
+                // Send to webhook (don't wait for response)
+                fetch('https://hook.us1.make.com/kom2fynz85ihopm1ji1k3tcgnyj6odmb', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                }).catch(err => console.error('Webhook error:', err));
+
+                // Immediately redirect to results page
+                window.location.href = `results.html?job_id=${jobId}`;
+
+            } catch (error) {
+                console.error('Error:', error);
+                generateNowBtn.disabled = false;
+                generateNowBtn.textContent = 'Generate Now';
+                alert('Error submitting. Please try again.');
+            }
+        });
+
+        // Handle "Pre-generate Timestamps" button click
+        document.getElementById('pregenerateBtn').addEventListener('click', async () => {
+            // Validate URL
+            const videoUrl = videoUrlInput.value.trim();
+            const videoId = extractYouTubeID(videoUrl);
+
+            if (!videoId) {
+                urlError.style.display = 'block';
+                urlError.textContent = 'Please enter a valid YouTube URL';
+                return;
+            }
+
+            const streamType = document.querySelector('input[name="streamType"]:checked').value;
+            const requestId = generateJobId(); // Reuse job ID generator for request ID
+
+            // Show progress bar
+            const aiProgress = document.getElementById('aiProgress');
+            const pregenerateBtn = document.getElementById('pregenerateBtn');
+            const generateNowBtn = document.getElementById('generateNowBtn');
+
+            pregenerateBtn.disabled = true;
+            generateNowBtn.disabled = true;
+            pregenerateBtn.textContent = 'Generating...';
+            aiProgress.style.display = 'block';
+
+            // Send webhook to Make.com for pre-generation
+            const pregeneratePayload = {
+                action: "pre_generate_timestamps",
+                request_id: requestId,
+                video_id: videoId,
+                video_url: videoUrl,
+                stream_type: streamType
+            };
+
+            try {
+                // Send webhook (fire and forget)
+                fetch('https://hook.us1.make.com/kom2fynz85ihopm1ji1k3tcgnyj6odmb', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(pregeneratePayload)
+                }).catch(err => console.error('Webhook error:', err));
+
+                // Poll for timestamps
+                const maxPolls = 60; // 3 minutes (60 * 3s)
+                let pollCount = 0;
+
+                const pollInterval = setInterval(async () => {
+                    pollCount++;
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/timestamps/${requestId}`);
+                        const data = await response.json();
+
+                        if (data.status === 'completed' && data.timestamps) {
+                            clearInterval(pollInterval);
+
+                            // Hide progress, re-enable buttons
+                            aiProgress.style.display = 'none';
+                            pregenerateBtn.disabled = false;
+                            generateNowBtn.disabled = false;
+                            pregenerateBtn.textContent = 'Pre-generate Timestamps';
+
+                            // Populate custom timestamp UI
+                            populateTimestampsFromAI(data.timestamps);
+
+                            // Switch to Custom mode to show the timestamps
+                            document.getElementById('captionCustom').checked = true;
+                            updateTimestampInputs();
+
+                            // Scroll to timestamps
+                            timestampInputs.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                        } else if (pollCount >= maxPolls) {
+                            // Timeout after 3 minutes
+                            clearInterval(pollInterval);
+                            aiProgress.style.display = 'none';
+                            pregenerateBtn.disabled = false;
+                            generateNowBtn.disabled = false;
+                            pregenerateBtn.textContent = 'Pre-generate Timestamps';
+                            alert('Timeout waiting for AI timestamps. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Polling error:', error);
+                    }
+                }, 3000); // Poll every 3 seconds
+
+            } catch (error) {
+                console.error('Pre-generate error:', error);
+                aiProgress.style.display = 'none';
+                pregenerateBtn.disabled = false;
+                generateNowBtn.disabled = false;
+                pregenerateBtn.textContent = 'Pre-generate Timestamps';
+                alert('Error requesting AI timestamps. Please try again.');
+            }
+        });
 
         // Form submission
         form.addEventListener('submit', async (e) => {
