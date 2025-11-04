@@ -307,6 +307,202 @@
             text-align: center;
         }
 
+        /* Visual Indicators */
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .indicator-badge {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .indicator-badge.volume {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .indicator-badge.muted {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .indicator-badge.opacity {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        /* Timeline Bar */
+        .timeline-bar {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .timeline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .timeline-track {
+            display: flex;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .timeline-segment.intro {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .timeline-segment.clips {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .timeline-segment.outro {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .timeline-segment.disabled {
+            background: #bdc3c7;
+            opacity: 0.5;
+        }
+
+        /* Collapsible Sections */
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            margin-left: auto;
+            transition: transform 0.3s;
+        }
+
+        .collapse-btn.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 1;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 8px;
+            border: 1px solid #667eea30;
+        }
+
+        .quick-actions-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .quick-action-btn {
+            padding: 8px 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .quick-action-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Enhanced Legend */
+        .legend-detail {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            padding-left: 34px;
+        }
+
+        /* Tooltips */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 11px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+        }
+
         @media (max-width: 1200px) {
             .editor-layout {
                 grid-template-columns: 1fr;
@@ -341,19 +537,46 @@
                     <video id="videoPreview" class="preview-video-layer"
                            muted loop playsinline>
                     </video>
+                    <!-- Visual Indicators Overlay -->
+                    <div class="canvas-overlay" id="canvasOverlay"></div>
                 </div>
                 <div class="canvas-legend">
                     <div class="legend-item">
                         <div class="legend-color" style="background: rgba(156, 136, 255, 0.5);"></div>
-                        <span>Main Video Layer</span>
+                        <div>
+                            <div>Main Video Layer</div>
+                            <div class="legend-detail" id="mainLegendDetail">Z-Index: 0, Volume: 100%</div>
+                        </div>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: rgba(255, 183, 77, 0.5);"></div>
-                        <span>Background Video Layer</span>
+                        <div>
+                            <div>Background Video Layer</div>
+                            <div class="legend-detail" id="bgLegendDetail">Z-Index: -1, Volume: 30%, Opacity: 100%</div>
+                        </div>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: rgba(129, 199, 132, 0.5);"></div>
-                        <span>Subtitle Area</span>
+                        <div>
+                            <div>Subtitle Area</div>
+                            <div class="legend-detail" id="subLegendDetail">Z-Index: 1, Color: #FFFFFF</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Bar -->
+                <div class="timeline-bar">
+                    <div class="timeline-label">Video Composition Timeline</div>
+                    <div class="timeline-track" id="timelineTrack">
+                        <div class="timeline-segment disabled intro" style="flex: 0" id="timelineIntro">
+                            No Intro
+                        </div>
+                        <div class="timeline-segment clips" style="flex: 1" id="timelineClips">
+                            Main Clips
+                        </div>
+                        <div class="timeline-segment disabled outro" style="flex: 0" id="timelineOutro">
+                            No Outro
+                        </div>
                     </div>
                 </div>
                 <div class="help-text">
@@ -371,14 +594,35 @@
                     </div>
                 </div>
 
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="quick-actions-title">⚡ Quick Actions</div>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" onclick="quickMuteBackground()" data-tooltip="Mute background audio instantly">
+                            🔇 Mute Background
+                        </button>
+                        <button class="quick-action-btn" onclick="quickDimBackground()" data-tooltip="Set background opacity to 50%">
+                            🌓 Dim Background
+                        </button>
+                        <button class="quick-action-btn" onclick="quickResetAll()" data-tooltip="Reset all layers to defaults">
+                            🔄 Reset All
+                        </button>
+                        <button class="quick-action-btn" onclick="quickCopyToAll()" data-tooltip="Apply current settings to all clips">
+                            📋 Copy to All Clips
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Intro/Outro Scenes -->
                 <div class="layer-controls">
-                    <div class="layer-title">
+                    <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; align-items: center;">
                             <div class="layer-indicator" style="background: rgba(255, 193, 7, 0.5);"></div>
                             Intro / Outro Scenes (Global)
                         </div>
+                        <button class="collapse-btn" onclick="toggleSection('introOutro')" data-tooltip="Collapse/Expand section">▼</button>
                     </div>
+                    <div class="collapsible-content" id="introOutroContent">
 
                     <!-- Intro Scene -->
                     <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
@@ -427,6 +671,7 @@
                             </div>
                         </div>
                     </div>
+                    </div><!-- End collapsible-content -->
                 </div>
 
                 <!-- Main Video Layer -->
@@ -457,7 +702,7 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
-                            <input type="number" class="input-field" id="mainZIndex" value="0" min="-99" max="99">
+                            <input type="number" class="input-field" id="mainZIndex" value="0" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
 
@@ -466,11 +711,11 @@
                         <div class="input-grid">
                             <div class="input-group">
                                 <label class="input-label">Start Time (s)</label>
-                                <input type="number" class="input-field" id="mainStartTime" value="0" step="0.1" min="0">
+                                <input type="number" class="input-field" id="mainStartTime" value="0" step="0.1" min="0" data-tooltip="Trim video from this time">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">End Time (s)</label>
-                                <input type="number" class="input-field" id="mainEndTime" value="0" step="0.1" min="0">
+                                <input type="number" class="input-field" id="mainEndTime" value="0" step="0.1" min="0" data-tooltip="Trim video to this time">
                             </div>
                         </div>
                     </div>
@@ -480,13 +725,13 @@
                         <div class="input-grid">
                             <div class="input-group">
                                 <label class="input-label">Volume</label>
-                                <input type="range" class="input-field" id="mainVolume" min="0" max="1" step="0.1" value="1" style="padding: 0;">
+                                <input type="range" class="input-field" id="mainVolume" min="0" max="1" step="0.1" value="1" style="padding: 0;" data-tooltip="Adjust main video volume (0-100%)">
                                 <span id="mainVolumeValue" style="font-size: 12px; color: #666;">100%</span>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Mute</label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="mainMute" style="width: 18px; height: 18px;">
+                                    <input type="checkbox" id="mainMute" style="width: 18px; height: 18px;" data-tooltip="Mute main video audio">
                                     <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
                                 </label>
                             </div>
@@ -522,7 +767,7 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
-                            <input type="number" class="input-field" id="bgZIndex" value="-1" min="-99" max="99">
+                            <input type="number" class="input-field" id="bgZIndex" value="-1" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
 
@@ -545,13 +790,13 @@
                         <div class="input-grid">
                             <div class="input-group">
                                 <label class="input-label">Volume</label>
-                                <input type="range" class="input-field" id="bgVolume" min="0" max="1" step="0.1" value="0.3" style="padding: 0;">
+                                <input type="range" class="input-field" id="bgVolume" min="0" max="1" step="0.1" value="0.3" style="padding: 0;" data-tooltip="Adjust background video volume (0-100%)">
                                 <span id="bgVolumeValue" style="font-size: 12px; color: #666;">30%</span>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Mute</label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="bgMute" style="width: 18px; height: 18px;">
+                                    <input type="checkbox" id="bgMute" style="width: 18px; height: 18px;" data-tooltip="Mute background video audio">
                                     <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
                                 </label>
                             </div>
@@ -563,7 +808,7 @@
                         <div class="input-grid">
                             <div class="input-group">
                                 <label class="input-label">Opacity</label>
-                                <input type="range" class="input-field" id="bgOpacity" min="0" max="1" step="0.1" value="1" style="padding: 0;">
+                                <input type="range" class="input-field" id="bgOpacity" min="0" max="1" step="0.1" value="1" style="padding: 0;" data-tooltip="Adjust background transparency (0-100%)">
                                 <span id="bgOpacityValue" style="font-size: 12px; color: #666;">100%</span>
                             </div>
                         </div>
@@ -616,7 +861,7 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
-                            <input type="number" class="input-field" id="subZIndex" value="1" min="-99" max="99">
+                            <input type="number" class="input-field" id="subZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
 
@@ -744,6 +989,7 @@
             const enableOutro = document.getElementById('enableOutro').checked;
             document.getElementById('introControls').style.display = enableIntro ? 'block' : 'none';
             document.getElementById('outroControls').style.display = enableOutro ? 'block' : 'none';
+            updateTimeline();
         }
 
         // Update volume percentage displays
@@ -757,6 +1003,7 @@
                 document.getElementById('mainVolumeValue').textContent = Math.round(mainVolume.value * 100) + '%';
                 mainVolume.addEventListener('input', (e) => {
                     document.getElementById('mainVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
+                    updateLegend();
                 });
             }
 
@@ -764,6 +1011,7 @@
                 document.getElementById('bgVolumeValue').textContent = Math.round(bgVolume.value * 100) + '%';
                 bgVolume.addEventListener('input', (e) => {
                     document.getElementById('bgVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
+                    updateLegend();
                 });
             }
 
@@ -771,6 +1019,7 @@
                 document.getElementById('bgOpacityValue').textContent = Math.round(bgOpacity.value * 100) + '%';
                 bgOpacity.addEventListener('input', (e) => {
                     document.getElementById('bgOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
+                    updateLegend();
                 });
             }
 
@@ -778,7 +1027,169 @@
                 document.getElementById('subBackgroundOpacityValue').textContent = Math.round(subBackgroundOpacity.value * 100) + '%';
                 subBackgroundOpacity.addEventListener('input', (e) => {
                     document.getElementById('subBackgroundOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
+                    updateLegend();
                 });
+            }
+        }
+
+        // Update canvas visual indicators
+        function updateCanvasIndicators() {
+            const overlay = document.getElementById('canvasOverlay');
+            if (!overlay) return;
+
+            overlay.innerHTML = ''; // Clear existing indicators
+
+            // Get current values
+            const mainVolume = parseFloat(document.getElementById('mainVolume').value);
+            const mainMute = document.getElementById('mainMute').checked;
+            const bgVolume = parseFloat(document.getElementById('bgVolume').value);
+            const bgMute = document.getElementById('bgMute').checked;
+            const bgOpacity = parseFloat(document.getElementById('bgOpacity').value);
+
+            // Main video audio indicator
+            const mainIndicator = document.createElement('div');
+            mainIndicator.className = 'indicator-badge ' + (mainMute ? 'muted' : 'volume');
+            mainIndicator.textContent = mainMute ? '🔇 Muted' : `🔊 ${Math.round(mainVolume * 100)}%`;
+            mainIndicator.style.top = '10px';
+            mainIndicator.style.right = '10px';
+            overlay.appendChild(mainIndicator);
+
+            // Background video indicators
+            const bgIndicator = document.createElement('div');
+            bgIndicator.className = 'indicator-badge ' + (bgMute ? 'muted' : 'volume');
+            bgIndicator.textContent = bgMute ? '🔇 BG Muted' : `🔊 BG ${Math.round(bgVolume * 100)}%`;
+            bgIndicator.style.bottom = '50px';
+            bgIndicator.style.right = '10px';
+            overlay.appendChild(bgIndicator);
+
+            if (bgOpacity < 1.0) {
+                const opacityIndicator = document.createElement('div');
+                opacityIndicator.className = 'indicator-badge opacity';
+                opacityIndicator.textContent = `🌓 ${Math.round(bgOpacity * 100)}% Opacity`;
+                opacityIndicator.style.bottom = '10px';
+                opacityIndicator.style.right = '10px';
+                overlay.appendChild(opacityIndicator);
+            }
+        }
+
+        // Update legend with current settings
+        function updateLegend() {
+            const mainZIndex = document.getElementById('mainZIndex')?.value || 0;
+            const mainVolume = document.getElementById('mainVolume')?.value || 1;
+            const mainMute = document.getElementById('mainMute')?.checked;
+
+            const bgZIndex = document.getElementById('bgZIndex')?.value || -1;
+            const bgVolume = document.getElementById('bgVolume')?.value || 0.3;
+            const bgMute = document.getElementById('bgMute')?.checked;
+            const bgOpacity = document.getElementById('bgOpacity')?.value || 1;
+
+            const subZIndex = document.getElementById('subZIndex')?.value || 1;
+            const subTextColor = document.getElementById('subTextColor')?.value || '#FFFFFF';
+
+            document.getElementById('mainLegendDetail').textContent =
+                `Z-Index: ${mainZIndex}, ${mainMute ? 'Muted' : 'Volume: ' + Math.round(mainVolume * 100) + '%'}`;
+
+            document.getElementById('bgLegendDetail').textContent =
+                `Z-Index: ${bgZIndex}, ${bgMute ? 'Muted' : 'Volume: ' + Math.round(bgVolume * 100) + '%'}, Opacity: ${Math.round(bgOpacity * 100)}%`;
+
+            document.getElementById('subLegendDetail').textContent =
+                `Z-Index: ${subZIndex}, Color: ${subTextColor}`;
+
+            updateCanvasIndicators();
+        }
+
+        // Update timeline visualization
+        function updateTimeline() {
+            const enableIntro = document.getElementById('enableIntro').checked;
+            const enableOutro = document.getElementById('enableOutro').checked;
+
+            const introSegment = document.getElementById('timelineIntro');
+            const clipsSegment = document.getElementById('timelineClips');
+            const outroSegment = document.getElementById('timelineOutro');
+
+            if (enableIntro) {
+                const introStart = parseFloat(document.getElementById('introStartTime').value) || 0;
+                const introEnd = parseFloat(document.getElementById('introEndTime').value) || 5;
+                const introDuration = introEnd - introStart;
+
+                introSegment.classList.remove('disabled');
+                introSegment.style.flex = introDuration / 10; // Scale for visual proportion
+                introSegment.textContent = `Intro (${introDuration.toFixed(1)}s)`;
+            } else {
+                introSegment.classList.add('disabled');
+                introSegment.style.flex = 0;
+                introSegment.textContent = 'No Intro';
+            }
+
+            if (enableOutro) {
+                const outroStart = parseFloat(document.getElementById('outroStartTime').value) || 0;
+                const outroEnd = parseFloat(document.getElementById('outroEndTime').value) || 5;
+                const outroDuration = outroEnd - outroStart;
+
+                outroSegment.classList.remove('disabled');
+                outroSegment.style.flex = outroDuration / 10; // Scale for visual proportion
+                outroSegment.textContent = `Outro (${outroDuration.toFixed(1)}s)`;
+            } else {
+                outroSegment.classList.add('disabled');
+                outroSegment.style.flex = 0;
+                outroSegment.textContent = 'No Outro';
+            }
+
+            // Clips always shown
+            clipsSegment.textContent = `Main Clips (${editorData?.selected_clips?.length || 0})`;
+        }
+
+        // Toggle collapsible sections
+        function toggleSection(sectionName) {
+            const content = document.getElementById(sectionName + 'Content');
+            const btn = event.target;
+
+            if (content) {
+                content.classList.toggle('collapsed');
+                btn.classList.toggle('collapsed');
+            }
+        }
+
+        // Quick Action: Mute Background
+        function quickMuteBackground() {
+            document.getElementById('bgMute').checked = true;
+            updateLegend();
+            updateCanvas();
+        }
+
+        // Quick Action: Dim Background
+        function quickDimBackground() {
+            document.getElementById('bgOpacity').value = 0.5;
+            document.getElementById('bgOpacityValue').textContent = '50%';
+            updateLegend();
+            updateCanvas();
+        }
+
+        // Quick Action: Reset All
+        function quickResetAll() {
+            if (confirm('Reset all layers to default values?')) {
+                resetLayer('main');
+                resetLayer('background');
+                resetLayer('subtitles');
+            }
+        }
+
+        // Quick Action: Copy to All Clips
+        function quickCopyToAll() {
+            if (confirm(`Copy current clip settings to all ${editorData.selected_clips.length} clips?`)) {
+                saveCurrentClip();
+                const currentConfig = clipConfigurations[currentClipIndex];
+
+                for (let i = 0; i < clipConfigurations.length; i++) {
+                    if (i !== currentClipIndex) {
+                        clipConfigurations[i] = {
+                            mainVideo: { ...currentConfig.mainVideo },
+                            background: { ...currentConfig.background },
+                            subtitles: { ...currentConfig.subtitles }
+                        };
+                    }
+                }
+                alert('Settings copied to all clips successfully!');
             }
         }
 
@@ -819,6 +1230,30 @@
 
             // Setup volume display listeners
             updateVolumeDisplays();
+
+            // Setup event listeners for legend updates
+            ['mainZIndex', 'bgZIndex', 'subZIndex'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.addEventListener('input', updateLegend);
+            });
+
+            ['mainMute', 'bgMute'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.addEventListener('change', updateLegend);
+            });
+
+            const subTextColor = document.getElementById('subTextColor');
+            if (subTextColor) subTextColor.addEventListener('input', updateLegend);
+
+            // Setup event listeners for timeline updates
+            ['introStartTime', 'introEndTime', 'outroStartTime', 'outroEndTime'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.addEventListener('input', updateTimeline);
+            });
+
+            // Initialize visual feedback
+            updateLegend();
+            updateTimeline();
         });
 
         // Load clip configuration
@@ -880,6 +1315,7 @@
             videoPreview.play().catch(e => console.log('Video autoplay prevented'));
 
             updateCanvas();
+            updateLegend();
         }
 
         // Save current clip configuration
