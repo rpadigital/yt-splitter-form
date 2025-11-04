@@ -65,7 +65,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 20px;
-            min-height: 1600px;
+            min-height: auto;
         }
 
         .canvas-title {
@@ -78,8 +78,9 @@
 
         .canvas-container {
             position: relative;
-            width: 810px;
-            height: 1440px;
+            width: 100%;
+            max-width: 810px;
+            aspect-ratio: 9 / 16;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             overflow: hidden;
@@ -91,6 +92,8 @@
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
             display: block;
             image-rendering: crisp-edges;
             z-index: 3;
@@ -470,7 +473,8 @@
 
     <script>
         const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
-        const SCALE = 0.75; // Canvas scale (810x1440 from 1080x1920)
+        const BASE_WIDTH = 1080; // True design width
+        let SCALE = 1; // Will be recalculated dynamically
 
         // Default positioning values
         const DEFAULTS = {
@@ -491,6 +495,31 @@
         let clipConfigurations = [];
         let dragState = null;
 
+        // Update scale and canvas size based on container
+        function updateScale() {
+            const container = document.getElementById('canvasContainer');
+            const canvas = document.getElementById('previewCanvas');
+
+            SCALE = container.offsetWidth / BASE_WIDTH;
+
+            // Update canvas internal dimensions to match display size
+            const newWidth = container.offsetWidth;
+            const newHeight = container.offsetHeight;
+
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+        }
+
+        // Debounce resize events for performance
+        let resizeTimeout;
+        function handleResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                updateScale();
+                updateCanvas();
+            }, 100);
+        }
+
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
             // Load data from sessionStorage
@@ -502,6 +531,9 @@
             }
 
             editorData = JSON.parse(storedData);
+
+            // Initialize scale and canvas size
+            updateScale();
             document.getElementById('jobIdDisplay').textContent = editorData.job_id;
             document.getElementById('totalClipsNum').textContent = editorData.selected_clips.length;
 
@@ -519,6 +551,9 @@
 
             // Setup drag-and-drop
             setupDragAndDrop();
+
+            // Setup resize listener
+            window.addEventListener('resize', handleResize);
         });
 
         // Load clip configuration
