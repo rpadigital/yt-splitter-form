@@ -83,11 +83,27 @@
             border-radius: 8px;
             overflow: hidden;
             cursor: move;
+            background: #000;
         }
 
         canvas {
             display: block;
             image-rendering: crisp-edges;
+        }
+
+        .preview-video-layer,
+        .preview-bg-layer {
+            position: absolute;
+            pointer-events: none;
+            object-fit: cover;
+        }
+
+        .preview-video-layer {
+            z-index: 2;
+        }
+
+        .preview-bg-layer {
+            z-index: 1;
         }
 
         .canvas-legend {
@@ -216,6 +232,24 @@
             border-color: #667eea;
         }
 
+        .reset-btn {
+            padding: 8px 16px;
+            background: white;
+            color: #999;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
         .submit-section {
             margin-top: 30px;
             padding-top: 30px;
@@ -293,6 +327,12 @@
                 <div class="canvas-title">Preview (1080x1920)</div>
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="540" height="960"></canvas>
+                    <img id="bgPreview" class="preview-bg-layer"
+                         src="https://i.imgur.com/8JYqV9k.png"
+                         alt="Background">
+                    <video id="videoPreview" class="preview-video-layer"
+                           muted loop playsinline>
+                    </video>
                 </div>
                 <div class="canvas-legend">
                     <div class="legend-item">
@@ -325,9 +365,12 @@
 
                 <!-- Main Video Layer -->
                 <div class="layer-controls">
-                    <div class="layer-title">
-                        <div class="layer-indicator" style="background: rgba(156, 136, 255, 0.5);"></div>
-                        Main Video Layer
+                    <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="layer-indicator" style="background: rgba(156, 136, 255, 0.5);"></div>
+                            Main Video Layer
+                        </div>
+                        <button class="reset-btn" onclick="resetLayer('main')">Reset</button>
                     </div>
                     <div class="input-grid">
                         <div class="input-group">
@@ -351,9 +394,12 @@
 
                 <!-- Background Video Layer -->
                 <div class="layer-controls">
-                    <div class="layer-title">
-                        <div class="layer-indicator" style="background: rgba(255, 183, 77, 0.5);"></div>
-                        Background Video Layer
+                    <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="layer-indicator" style="background: rgba(255, 183, 77, 0.5);"></div>
+                            Background Video Layer
+                        </div>
+                        <button class="reset-btn" onclick="resetLayer('background')">Reset</button>
                     </div>
                     <div class="input-grid">
                         <div class="input-group">
@@ -377,9 +423,12 @@
 
                 <!-- Subtitles -->
                 <div class="layer-controls">
-                    <div class="layer-title">
-                        <div class="layer-indicator" style="background: rgba(129, 199, 132, 0.5);"></div>
-                        Subtitles
+                    <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="layer-indicator" style="background: rgba(129, 199, 132, 0.5);"></div>
+                            Subtitles
+                        </div>
+                        <button class="reset-btn" onclick="resetLayer('subtitles')">Reset</button>
                     </div>
                     <div class="input-grid">
                         <div class="input-group">
@@ -471,6 +520,7 @@
         function loadClip(index) {
             currentClipIndex = index;
             const config = clipConfigurations[index];
+            const clip = editorData.selected_clips[index];
 
             // Update UI
             document.getElementById('currentClipNum').textContent = index + 1;
@@ -492,6 +542,12 @@
             document.getElementById('subY').value = config.subtitles.y;
             document.getElementById('subFontSize').value = config.subtitles.fontSize;
             document.getElementById('subFontFamily').value = config.subtitles.fontFamily;
+
+            // Load video preview
+            const videoPreview = document.getElementById('videoPreview');
+            videoPreview.src = clip.url;
+            videoPreview.load();
+            videoPreview.play().catch(e => console.log('Video autoplay prevented'));
 
             updateCanvas();
         }
@@ -537,11 +593,10 @@
             const ctx = canvas.getContext('2d');
 
             // Clear canvas
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw grid lines
-            ctx.strokeStyle = '#e0e0e0';
+            ctx.strokeStyle = '#333';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 10; i++) {
                 const x = (canvas.width / 10) * i;
@@ -570,34 +625,55 @@
             const subX = parseInt(document.getElementById('subX').value);
             const subY = parseInt(document.getElementById('subY').value);
 
-            // Draw background layer (orange/yellow)
-            ctx.fillStyle = 'rgba(255, 183, 77, 0.5)';
-            ctx.fillRect(bgX * SCALE, bgY * SCALE, bgWidth * SCALE, bgHeight * SCALE);
-            ctx.strokeStyle = 'rgba(255, 152, 0, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(bgX * SCALE, bgY * SCALE, bgWidth * SCALE, bgHeight * SCALE);
+            // Position background image
+            const bgPreview = document.getElementById('bgPreview');
+            bgPreview.style.left = (bgX * SCALE) + 'px';
+            bgPreview.style.top = (bgY * SCALE) + 'px';
+            bgPreview.style.width = (bgWidth * SCALE) + 'px';
+            bgPreview.style.height = (bgHeight * SCALE) + 'px';
 
-            // Draw main video layer (purple/blue)
-            ctx.fillStyle = 'rgba(156, 136, 255, 0.5)';
-            ctx.fillRect(mainX * SCALE, mainY * SCALE, mainWidth * SCALE, mainHeight * SCALE);
-            ctx.strokeStyle = 'rgba(103, 58, 183, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(mainX * SCALE, mainY * SCALE, mainWidth * SCALE, mainHeight * SCALE);
+            // Position video preview
+            const videoPreview = document.getElementById('videoPreview');
+            videoPreview.style.left = (mainX * SCALE) + 'px';
+            videoPreview.style.top = (mainY * SCALE) + 'px';
+            videoPreview.style.width = (mainWidth * SCALE) + 'px';
+            videoPreview.style.height = (mainHeight * SCALE) + 'px';
 
-            // Draw subtitle area (green)
+            // Draw subtitle area (green overlay)
             const subWidth = 400;
             const subHeight = 100;
-            ctx.fillStyle = 'rgba(129, 199, 132, 0.5)';
+            ctx.fillStyle = 'rgba(129, 199, 132, 0.3)';
             ctx.fillRect((subX - subWidth/2) * SCALE, (subY - subHeight/2) * SCALE, subWidth * SCALE, subHeight * SCALE);
-            ctx.strokeStyle = 'rgba(76, 175, 80, 0.8)';
+            ctx.strokeStyle = 'rgba(76, 175, 80, 1)';
             ctx.lineWidth = 2;
             ctx.strokeRect((subX - subWidth/2) * SCALE, (subY - subHeight/2) * SCALE, subWidth * SCALE, subHeight * SCALE);
 
             // Draw center point for subtitle
-            ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+            ctx.fillStyle = 'rgba(76, 175, 80, 1)';
             ctx.beginPath();
-            ctx.arc(subX * SCALE, subY * SCALE, 4, 0, 2 * Math.PI);
+            ctx.arc(subX * SCALE, subY * SCALE, 5, 0, 2 * Math.PI);
             ctx.fill();
+        }
+
+        // Reset layer to default values
+        function resetLayer(layer) {
+            if (layer === 'main') {
+                document.getElementById('mainX').value = DEFAULTS.mainVideo.x;
+                document.getElementById('mainY').value = DEFAULTS.mainVideo.y;
+                document.getElementById('mainWidth').value = DEFAULTS.mainVideo.width;
+                document.getElementById('mainHeight').value = DEFAULTS.mainVideo.height;
+            } else if (layer === 'background') {
+                document.getElementById('bgX').value = DEFAULTS.background.x;
+                document.getElementById('bgY').value = DEFAULTS.background.y;
+                document.getElementById('bgWidth').value = DEFAULTS.background.width;
+                document.getElementById('bgHeight').value = DEFAULTS.background.height;
+            } else if (layer === 'subtitles') {
+                document.getElementById('subX').value = DEFAULTS.subtitles.x;
+                document.getElementById('subY').value = DEFAULTS.subtitles.y;
+                document.getElementById('subFontSize').value = DEFAULTS.subtitles.fontSize;
+                document.getElementById('subFontFamily').value = DEFAULTS.subtitles.fontFamily;
+            }
+            updateCanvas();
         }
 
         // Setup drag-and-drop
