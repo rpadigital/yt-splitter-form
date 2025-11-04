@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Position Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .job-id {
+            color: #666;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+        }
+
+        .clip-counter {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 540px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .canvas-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 20px;
+        }
+
+        .canvas-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 540px;
+            height: 960px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: move;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: crisp-edges;
+        }
+
+        .canvas-legend {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .clip-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .layer-controls {
+            margin-bottom: 30px;
+        }
+
+        .layer-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .layer-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .input-field {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .submit-btn {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #999;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .editor-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .canvas-section {
+                position: relative;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Video Position Editor</h1>
+            <div class="job-id">Job ID: <span id="jobIdDisplay"></span></div>
+            <div class="clip-counter">
+                Clip <span id="currentClipNum">1</span> of <span id="totalClipsNum">0</span>
+            </div>
+        </div>
+
+        <div class="editor-layout">
+            <!-- Canvas Preview -->
+            <div class="canvas-section">
+                <div class="canvas-title">Preview (1080x1920)</div>
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="previewCanvas" width="540" height="960"></canvas>
+                </div>
+                <div class="canvas-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(156, 136, 255, 0.5);"></div>
+                        <span>Main Video Layer</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(255, 183, 77, 0.5);"></div>
+                        <span>Background Video Layer</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(129, 199, 132, 0.5);"></div>
+                        <span>Subtitle Area</span>
+                    </div>
+                </div>
+                <div class="help-text">
+                    Drag rectangles on canvas or use controls to adjust positioning
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <div class="controls-header">
+                    <h2 style="color: #333;">Position Settings</h2>
+                    <div class="clip-nav">
+                        <button class="nav-btn" id="prevBtn" onclick="prevClip()">← Previous</button>
+                        <button class="nav-btn" id="nextBtn" onclick="nextClip()">Next →</button>
+                    </div>
+                </div>
+
+                <!-- Main Video Layer -->
+                <div class="layer-controls">
+                    <div class="layer-title">
+                        <div class="layer-indicator" style="background: rgba(156, 136, 255, 0.5);"></div>
+                        Main Video Layer
+                    </div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">X Position</label>
+                            <input type="number" class="input-field" id="mainX" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Y Position</label>
+                            <input type="number" class="input-field" id="mainY" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Width</label>
+                            <input type="number" class="input-field" id="mainWidth" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Height</label>
+                            <input type="number" class="input-field" id="mainHeight" oninput="updateCanvas()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Background Video Layer -->
+                <div class="layer-controls">
+                    <div class="layer-title">
+                        <div class="layer-indicator" style="background: rgba(255, 183, 77, 0.5);"></div>
+                        Background Video Layer
+                    </div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">X Position</label>
+                            <input type="number" class="input-field" id="bgX" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Y Position</label>
+                            <input type="number" class="input-field" id="bgY" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Width</label>
+                            <input type="number" class="input-field" id="bgWidth" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Height</label>
+                            <input type="number" class="input-field" id="bgHeight" oninput="updateCanvas()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subtitles -->
+                <div class="layer-controls">
+                    <div class="layer-title">
+                        <div class="layer-indicator" style="background: rgba(129, 199, 132, 0.5);"></div>
+                        Subtitles
+                    </div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">X Position</label>
+                            <input type="number" class="input-field" id="subX" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Y Position</label>
+                            <input type="number" class="input-field" id="subY" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Font Size</label>
+                            <input type="number" class="input-field" id="subFontSize" oninput="updateCanvas()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Font Family</label>
+                            <input type="text" class="input-field" id="subFontFamily" oninput="updateCanvas()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="submit-section">
+                    <button class="submit-btn" id="submitBtn" onclick="submitConfiguration()">
+                        Submit to Make.com
+                    </button>
+                    <div class="success-message" id="successMessage">
+                        Configuration submitted successfully!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
+        const SCALE = 0.5; // Canvas scale (540x960 from 1080x1920)
+
+        // Default positioning values
+        const DEFAULTS = {
+            mainVideo: { width: 1826, height: 1045, x: -306, y: -23 },
+            background: { width: 1800, height: 978, x: -292, y: 1021 },
+            subtitles: {
+                fontFamily: "Permanent Marker",
+                maxWordsPerLine: 1,
+                fontSize: 125,
+                x: 540,
+                y: 1000,
+                outlineWidth: 10
+            }
+        };
+
+        let editorData = null;
+        let currentClipIndex = 0;
+        let clipConfigurations = [];
+        let dragState = null;
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load data from sessionStorage
+            const storedData = sessionStorage.getItem('editorData');
+            if (!storedData) {
+                alert('No clip data found. Redirecting to results page.');
+                window.location.href = 'results.html';
+                return;
+            }
+
+            editorData = JSON.parse(storedData);
+            document.getElementById('jobIdDisplay').textContent = editorData.job_id;
+            document.getElementById('totalClipsNum').textContent = editorData.selected_clips.length;
+
+            // Initialize configurations with defaults
+            editorData.selected_clips.forEach(() => {
+                clipConfigurations.push({
+                    mainVideo: { ...DEFAULTS.mainVideo },
+                    background: { ...DEFAULTS.background },
+                    subtitles: { ...DEFAULTS.subtitles }
+                });
+            });
+
+            // Load first clip
+            loadClip(0);
+
+            // Setup drag-and-drop
+            setupDragAndDrop();
+        });
+
+        // Load clip configuration
+        function loadClip(index) {
+            currentClipIndex = index;
+            const config = clipConfigurations[index];
+
+            // Update UI
+            document.getElementById('currentClipNum').textContent = index + 1;
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === editorData.selected_clips.length - 1;
+
+            // Update input fields
+            document.getElementById('mainX').value = config.mainVideo.x;
+            document.getElementById('mainY').value = config.mainVideo.y;
+            document.getElementById('mainWidth').value = config.mainVideo.width;
+            document.getElementById('mainHeight').value = config.mainVideo.height;
+
+            document.getElementById('bgX').value = config.background.x;
+            document.getElementById('bgY').value = config.background.y;
+            document.getElementById('bgWidth').value = config.background.width;
+            document.getElementById('bgHeight').value = config.background.height;
+
+            document.getElementById('subX').value = config.subtitles.x;
+            document.getElementById('subY').value = config.subtitles.y;
+            document.getElementById('subFontSize').value = config.subtitles.fontSize;
+            document.getElementById('subFontFamily').value = config.subtitles.fontFamily;
+
+            updateCanvas();
+        }
+
+        // Save current clip configuration
+        function saveCurrentClip() {
+            const config = clipConfigurations[currentClipIndex];
+
+            config.mainVideo.x = parseInt(document.getElementById('mainX').value);
+            config.mainVideo.y = parseInt(document.getElementById('mainY').value);
+            config.mainVideo.width = parseInt(document.getElementById('mainWidth').value);
+            config.mainVideo.height = parseInt(document.getElementById('mainHeight').value);
+
+            config.background.x = parseInt(document.getElementById('bgX').value);
+            config.background.y = parseInt(document.getElementById('bgY').value);
+            config.background.width = parseInt(document.getElementById('bgWidth').value);
+            config.background.height = parseInt(document.getElementById('bgHeight').value);
+
+            config.subtitles.x = parseInt(document.getElementById('subX').value);
+            config.subtitles.y = parseInt(document.getElementById('subY').value);
+            config.subtitles.fontSize = parseInt(document.getElementById('subFontSize').value);
+            config.subtitles.fontFamily = document.getElementById('subFontFamily').value;
+        }
+
+        // Navigation
+        function prevClip() {
+            if (currentClipIndex > 0) {
+                saveCurrentClip();
+                loadClip(currentClipIndex - 1);
+            }
+        }
+
+        function nextClip() {
+            if (currentClipIndex < editorData.selected_clips.length - 1) {
+                saveCurrentClip();
+                loadClip(currentClipIndex + 1);
+            }
+        }
+
+        // Update canvas
+        function updateCanvas() {
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Clear canvas
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid lines
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const x = (canvas.width / 10) * i;
+                const y = (canvas.height / 10) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Get current values
+            const mainX = parseInt(document.getElementById('mainX').value);
+            const mainY = parseInt(document.getElementById('mainY').value);
+            const mainWidth = parseInt(document.getElementById('mainWidth').value);
+            const mainHeight = parseInt(document.getElementById('mainHeight').value);
+
+            const bgX = parseInt(document.getElementById('bgX').value);
+            const bgY = parseInt(document.getElementById('bgY').value);
+            const bgWidth = parseInt(document.getElementById('bgWidth').value);
+            const bgHeight = parseInt(document.getElementById('bgHeight').value);
+
+            const subX = parseInt(document.getElementById('subX').value);
+            const subY = parseInt(document.getElementById('subY').value);
+
+            // Draw background layer (orange/yellow)
+            ctx.fillStyle = 'rgba(255, 183, 77, 0.5)';
+            ctx.fillRect(bgX * SCALE, bgY * SCALE, bgWidth * SCALE, bgHeight * SCALE);
+            ctx.strokeStyle = 'rgba(255, 152, 0, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bgX * SCALE, bgY * SCALE, bgWidth * SCALE, bgHeight * SCALE);
+
+            // Draw main video layer (purple/blue)
+            ctx.fillStyle = 'rgba(156, 136, 255, 0.5)';
+            ctx.fillRect(mainX * SCALE, mainY * SCALE, mainWidth * SCALE, mainHeight * SCALE);
+            ctx.strokeStyle = 'rgba(103, 58, 183, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(mainX * SCALE, mainY * SCALE, mainWidth * SCALE, mainHeight * SCALE);
+
+            // Draw subtitle area (green)
+            const subWidth = 400;
+            const subHeight = 100;
+            ctx.fillStyle = 'rgba(129, 199, 132, 0.5)';
+            ctx.fillRect((subX - subWidth/2) * SCALE, (subY - subHeight/2) * SCALE, subWidth * SCALE, subHeight * SCALE);
+            ctx.strokeStyle = 'rgba(76, 175, 80, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect((subX - subWidth/2) * SCALE, (subY - subHeight/2) * SCALE, subWidth * SCALE, subHeight * SCALE);
+
+            // Draw center point for subtitle
+            ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+            ctx.beginPath();
+            ctx.arc(subX * SCALE, subY * SCALE, 4, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Setup drag-and-drop
+        function setupDragAndDrop() {
+            const canvas = document.getElementById('previewCanvas');
+            let isDragging = false;
+            let dragTarget = null;
+            let dragOffset = { x: 0, y: 0 };
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / SCALE;
+                const y = (e.clientY - rect.top) / SCALE;
+
+                // Check which layer was clicked (reverse order for top layer first)
+                const mainX = parseInt(document.getElementById('mainX').value);
+                const mainY = parseInt(document.getElementById('mainY').value);
+                const mainWidth = parseInt(document.getElementById('mainWidth').value);
+                const mainHeight = parseInt(document.getElementById('mainHeight').value);
+
+                const bgX = parseInt(document.getElementById('bgX').value);
+                const bgY = parseInt(document.getElementById('bgY').value);
+                const bgWidth = parseInt(document.getElementById('bgWidth').value);
+                const bgHeight = parseInt(document.getElementById('bgHeight').value);
+
+                const subX = parseInt(document.getElementById('subX').value);
+                const subY = parseInt(document.getElementById('subY').value);
+                const subWidth = 400;
+                const subHeight = 100;
+
+                // Check main video layer
+                if (x >= mainX && x <= mainX + mainWidth && y >= mainY && y <= mainY + mainHeight) {
+                    isDragging = true;
+                    dragTarget = 'main';
+                    dragOffset = { x: x - mainX, y: y - mainY };
+                }
+                // Check subtitle area
+                else if (x >= subX - subWidth/2 && x <= subX + subWidth/2 &&
+                         y >= subY - subHeight/2 && y <= subY + subHeight/2) {
+                    isDragging = true;
+                    dragTarget = 'subtitle';
+                    dragOffset = { x: x - subX, y: y - subY };
+                }
+                // Check background layer
+                else if (x >= bgX && x <= bgX + bgWidth && y >= bgY && y <= bgY + bgHeight) {
+                    isDragging = true;
+                    dragTarget = 'background';
+                    dragOffset = { x: x - bgX, y: y - bgY };
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / SCALE;
+                const y = (e.clientY - rect.top) / SCALE;
+
+                if (dragTarget === 'main') {
+                    document.getElementById('mainX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('mainY').value = Math.round(y - dragOffset.y);
+                } else if (dragTarget === 'background') {
+                    document.getElementById('bgX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('bgY').value = Math.round(y - dragOffset.y);
+                } else if (dragTarget === 'subtitle') {
+                    document.getElementById('subX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('subY').value = Math.round(y - dragOffset.y);
+                }
+
+                updateCanvas();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+                dragTarget = null;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                isDragging = false;
+                dragTarget = null;
+            });
+        }
+
+        // Submit configuration
+        async function submitConfiguration() {
+            saveCurrentClip();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            // Build payload for JSON2VIDEO
+            const clips = editorData.selected_clips.map((clip, index) => {
+                const config = clipConfigurations[index];
+                return {
+                    clip_url: clip.url,
+                    clip_filename: clip.filename,
+                    clip_duration: clip.duration,
+                    start_time: clip.start_time,
+                    end_time: clip.end_time,
+                    reason: clip.reason,
+                    json2video_config: {
+                        resolution: "portrait",
+                        quality: "high",
+                        scenes: [
+                            {
+                                background: {
+                                    type: "video",
+                                    src: `{{${editorData.b_roll_type}_video_url}}`, // Make.com will replace this
+                                    width: config.background.width,
+                                    height: config.background.height,
+                                    x: config.background.x,
+                                    y: config.background.y
+                                },
+                                layers: [
+                                    {
+                                        type: "video",
+                                        src: clip.url,
+                                        width: config.mainVideo.width,
+                                        height: config.mainVideo.height,
+                                        x: config.mainVideo.x,
+                                        y: config.mainVideo.y
+                                    }
+                                ],
+                                subtitles: {
+                                    fontFamily: config.subtitles.fontFamily,
+                                    maxWordsPerLine: config.subtitles.maxWordsPerLine || 1,
+                                    fontSize: config.subtitles.fontSize,
+                                    x: config.subtitles.x,
+                                    y: config.subtitles.y,
+                                    outlineWidth: config.subtitles.outlineWidth || 10
+                                }
+                            }
+                        ]
+                    }
+                };
+            });
+
+            const payload = {
+                job_id: editorData.job_id,
+                action: "create_final_videos",
+                b_roll_type: editorData.b_roll_type,
+                clips: clips
+            };
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    document.getElementById('successMessage').classList.add('show');
+                    submitBtn.textContent = 'Submitted!';
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to submit configuration. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit to Make.com';
+            }
+        }
+    </script>
+</body>
+</html>
