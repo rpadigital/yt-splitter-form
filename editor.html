@@ -729,6 +729,13 @@
                         </div>
                         <button class="reset-btn" onclick="resetLayer('background')">Reset</button>
                     </div>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label class="input-label">B-Roll Footage</label>
+                        <select class="input-field" id="bRollSelect" onchange="changeBRoll()">
+                            <option value="minecraft">Minecraft</option>
+                            <option value="temple_run">Temple Run</option>
+                        </select>
+                    </div>
                     <div class="input-grid">
                         <div class="input-group">
                             <label class="input-label">X Position</label>
@@ -864,6 +871,18 @@
         const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
         const BASE_WIDTH = 1080; // True design width
         let SCALE = 1; // Will be recalculated dynamically
+
+        // B-roll footage options
+        const BROLL_OPTIONS = {
+            minecraft: {
+                name: "Minecraft",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/ezgif.com-optimize.gif"
+            },
+            temple_run: {
+                name: "Temple Run",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/templerun_gif.gif"
+            }
+        };
 
         // Default positioning values
         const DEFAULTS = {
@@ -1051,6 +1070,23 @@
             clipsSegment.textContent = `Main Clips (${editorData?.selected_clips?.length || 0})`;
         }
 
+        // Change B-roll footage
+        function changeBRoll() {
+            const bRollSelect = document.getElementById('bRollSelect');
+            const selectedBRoll = bRollSelect.value;
+
+            // Update editorData with new b_roll_type
+            if (editorData) {
+                editorData.b_roll_type = selectedBRoll;
+            }
+
+            // Update background preview image
+            const bgPreview = document.getElementById('bgPreview');
+            if (BROLL_OPTIONS[selectedBRoll]) {
+                bgPreview.src = BROLL_OPTIONS[selectedBRoll].url;
+            }
+        }
+
         // Toggle collapsible sections
         function toggleSection(sectionName) {
             const content = document.getElementById(sectionName + 'Content');
@@ -1177,6 +1213,17 @@
             document.getElementById('currentClipDuration').textContent = (clip.duration || 0).toFixed(1) + 's';
             document.getElementById('prevBtn').disabled = index === 0;
             document.getElementById('nextBtn').disabled = index === editorData.selected_clips.length - 1;
+
+            // Update B-roll selection
+            const bRollSelect = document.getElementById('bRollSelect');
+            if (bRollSelect && editorData.b_roll_type) {
+                bRollSelect.value = editorData.b_roll_type;
+                // Update the preview image to match the selection
+                const bgPreview = document.getElementById('bgPreview');
+                if (BROLL_OPTIONS[editorData.b_roll_type]) {
+                    bgPreview.src = BROLL_OPTIONS[editorData.b_roll_type].url;
+                }
+            }
 
             // Update main video fields
             document.getElementById('mainX').value = config.mainVideo.x;
