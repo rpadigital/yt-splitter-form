@@ -553,14 +553,14 @@
                         <div class="legend-color" style="background: rgba(255, 183, 77, 0.5);"></div>
                         <div>
                             <div>Background Video Layer</div>
-                            <div class="legend-detail" id="bgLegendDetail">Z-Index: -1</div>
+                            <div class="legend-detail" id="bgLegendDetail">Z-Index: 1</div>
                         </div>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: rgba(129, 199, 132, 0.5);"></div>
                         <div>
                             <div>Subtitle Area</div>
-                            <div class="legend-detail" id="subLegendDetail">Z-Index: 1, Color: #FFFFFF</div>
+                            <div class="legend-detail" id="subLegendDetail">Z-Index: 2, Color: #FFFFFF</div>
                         </div>
                     </div>
                 </div>
@@ -748,7 +748,7 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
-                            <input type="number" class="input-field" id="bgZIndex" value="-1" min="-99" max="99" data-tooltip="Higher values appear in front">
+                            <input type="number" class="input-field" id="bgZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
                 </div>
@@ -820,7 +820,7 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
-                            <input type="number" class="input-field" id="subZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
+                            <input type="number" class="input-field" id="subZIndex" value="2" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
 
@@ -883,7 +883,7 @@
                 height: 978,
                 x: -292,
                 y: 1021,
-                zIndex: -1
+                zIndex: 1
             },
             subtitles: {
                 fontFamily: "Permanent Marker",
@@ -897,7 +897,7 @@
                 backgroundColor: "#000000",
                 fontWeight: "bold",
                 alignment: "center",
-                zIndex: 1
+                zIndex: 2
             }
         };
 
@@ -950,9 +950,14 @@
                     const volumeValue = parseFloat(e.target.value);
                     document.getElementById('mainVolumeValue').textContent = Math.round(volumeValue * 100) + '%';
 
-                    // When volume is adjusted from 0, uncheck mute
                     const mainMute = document.getElementById('mainMute');
-                    if (volumeValue > 0 && mainMute.checked) {
+
+                    // When volume reaches 0, automatically check mute
+                    if (volumeValue === 0) {
+                        mainMute.checked = true;
+                    }
+                    // When volume is increased from 0, uncheck mute
+                    else if (volumeValue > 0 && mainMute.checked) {
                         mainMute.checked = false;
                     }
 
@@ -988,9 +993,9 @@
             const mainVolume = document.getElementById('mainVolume')?.value || 1;
             const mainMute = document.getElementById('mainMute')?.checked;
 
-            const bgZIndex = document.getElementById('bgZIndex')?.value || -1;
+            const bgZIndex = document.getElementById('bgZIndex')?.value || 1;
 
-            const subZIndex = document.getElementById('subZIndex')?.value || 1;
+            const subZIndex = document.getElementById('subZIndex')?.value || 2;
             const subTextColor = document.getElementById('subTextColor')?.value || '#FFFFFF';
 
             document.getElementById('mainLegendDetail').textContent =
@@ -1321,8 +1326,8 @@
 
             // Get z-index and other effect values
             const mainZIndex = parseInt(document.getElementById('mainZIndex').value) || 0;
-            const bgZIndex = parseInt(document.getElementById('bgZIndex').value) || -1;
-            const subZIndex = parseInt(document.getElementById('subZIndex').value) || 1;
+            const bgZIndex = parseInt(document.getElementById('bgZIndex').value) || 1;
+            const subZIndex = parseInt(document.getElementById('subZIndex').value) || 2;
             const mainVolume = parseFloat(document.getElementById('mainVolume').value) || 1;
             const mainMute = document.getElementById('mainMute').checked;
 
