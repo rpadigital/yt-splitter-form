@@ -1025,6 +1025,7 @@
                 mainVolume.addEventListener('input', (e) => {
                     document.getElementById('mainVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
                     updateLegend();
+                    updateCanvas();
                 });
             }
 
@@ -1041,6 +1042,7 @@
                 bgOpacity.addEventListener('input', (e) => {
                     document.getElementById('bgOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
                     updateLegend();
+                    updateCanvas();
                 });
             }
 
@@ -1255,12 +1257,22 @@
             // Setup event listeners for legend updates
             ['mainZIndex', 'bgZIndex', 'subZIndex'].forEach(id => {
                 const elem = document.getElementById(id);
-                if (elem) elem.addEventListener('input', updateLegend);
+                if (elem) {
+                    elem.addEventListener('input', () => {
+                        updateLegend();
+                        updateCanvas();
+                    });
+                }
             });
 
             ['mainMute', 'bgMute'].forEach(id => {
                 const elem = document.getElementById(id);
-                if (elem) elem.addEventListener('change', updateLegend);
+                if (elem) {
+                    elem.addEventListener('change', () => {
+                        updateLegend();
+                        updateCanvas();
+                    });
+                }
             });
 
             const subTextColor = document.getElementById('subTextColor');
@@ -1451,12 +1463,22 @@
             const subX = parseInt(document.getElementById('subX').value);
             const subY = parseInt(document.getElementById('subY').value);
 
+            // Get z-index and other effect values
+            const mainZIndex = parseInt(document.getElementById('mainZIndex').value) || 0;
+            const bgZIndex = parseInt(document.getElementById('bgZIndex').value) || -1;
+            const subZIndex = parseInt(document.getElementById('subZIndex').value) || 1;
+            const bgOpacity = parseFloat(document.getElementById('bgOpacity').value) || 1;
+            const mainVolume = parseFloat(document.getElementById('mainVolume').value) || 1;
+            const mainMute = document.getElementById('mainMute').checked;
+
             // Position background image
             const bgPreview = document.getElementById('bgPreview');
             bgPreview.style.left = (bgX * SCALE) + 'px';
             bgPreview.style.top = (bgY * SCALE) + 'px';
             bgPreview.style.width = (bgWidth * SCALE) + 'px';
             bgPreview.style.height = (bgHeight * SCALE) + 'px';
+            bgPreview.style.zIndex = bgZIndex;
+            bgPreview.style.opacity = bgOpacity;
 
             // Position video preview
             const videoPreview = document.getElementById('videoPreview');
@@ -1464,6 +1486,12 @@
             videoPreview.style.top = (mainY * SCALE) + 'px';
             videoPreview.style.width = (mainWidth * SCALE) + 'px';
             videoPreview.style.height = (mainHeight * SCALE) + 'px';
+            videoPreview.style.zIndex = mainZIndex;
+            videoPreview.volume = mainMute ? 0 : mainVolume;
+            videoPreview.muted = mainMute;
+
+            // Update canvas z-index (for subtitles overlay)
+            canvas.style.zIndex = subZIndex;
 
             // Draw subtitle area (green overlay)
             const subWidth = 400;
