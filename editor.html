@@ -1178,8 +1178,6 @@
             document.getElementById('mainWidth').value = config.mainVideo.width;
             document.getElementById('mainHeight').value = config.mainVideo.height;
             document.getElementById('mainZIndex').value = config.mainVideo.zIndex;
-            document.getElementById('mainStartTime').value = config.mainVideo.startTime;
-            document.getElementById('mainEndTime').value = config.mainVideo.endTime || clip.duration || 0;
             document.getElementById('mainVolume').value = config.mainVideo.volume;
             document.getElementById('mainMute').checked = config.mainVideo.mute;
 
@@ -1242,8 +1240,6 @@
             config.mainVideo.width = parseInt(document.getElementById('mainWidth').value);
             config.mainVideo.height = parseInt(document.getElementById('mainHeight').value);
             config.mainVideo.zIndex = parseInt(document.getElementById('mainZIndex').value);
-            config.mainVideo.startTime = parseFloat(document.getElementById('mainStartTime').value);
-            config.mainVideo.endTime = parseFloat(document.getElementById('mainEndTime').value);
             config.mainVideo.volume = parseFloat(document.getElementById('mainVolume').value);
             config.mainVideo.mute = document.getElementById('mainMute').checked;
 
@@ -1376,8 +1372,6 @@
                 document.getElementById('mainWidth').value = DEFAULTS.mainVideo.width;
                 document.getElementById('mainHeight').value = DEFAULTS.mainVideo.height;
                 document.getElementById('mainZIndex').value = DEFAULTS.mainVideo.zIndex;
-                document.getElementById('mainStartTime').value = DEFAULTS.mainVideo.startTime;
-                document.getElementById('mainEndTime').value = DEFAULTS.mainVideo.endTime;
                 document.getElementById('mainVolume').value = DEFAULTS.mainVideo.volume;
                 document.getElementById('mainMute').checked = DEFAULTS.mainVideo.mute;
             } else if (layer === 'background') {
