@@ -552,7 +552,7 @@
                         <div class="legend-color" style="background: rgba(255, 183, 77, 0.5);"></div>
                         <div>
                             <div>Background Video Layer</div>
-                            <div class="legend-detail" id="bgLegendDetail">Z-Index: -1, Volume: 30%, Opacity: 100%</div>
+                            <div class="legend-detail" id="bgLegendDetail">Z-Index: -1</div>
                         </div>
                     </div>
                     <div class="legend-item">
@@ -598,12 +598,6 @@
                 <div class="quick-actions">
                     <div class="quick-actions-title">⚡ Quick Actions</div>
                     <div class="quick-actions-grid">
-                        <button class="quick-action-btn" onclick="quickMuteBackground()" data-tooltip="Mute background audio instantly">
-                            🔇 Mute Background
-                        </button>
-                        <button class="quick-action-btn" onclick="quickDimBackground()" data-tooltip="Set background opacity to 50%">
-                            🌓 Dim Background
-                        </button>
                         <button class="quick-action-btn" onclick="quickResetAll()" data-tooltip="Reset all layers to defaults">
                             🔄 Reset All
                         </button>
@@ -707,20 +701,6 @@
                     </div>
 
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Trim Video</div>
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label class="input-label">Start Time (s)</label>
-                                <input type="number" class="input-field" id="mainStartTime" value="0" step="0.1" min="0" data-tooltip="Trim video from this time">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">End Time (s)</label>
-                                <input type="number" class="input-field" id="mainEndTime" value="0" step="0.1" min="0" data-tooltip="Trim video to this time">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
                         <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Audio</div>
                         <div class="input-grid">
                             <div class="input-group">
@@ -768,49 +748,6 @@
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
                             <input type="number" class="input-field" id="bgZIndex" value="-1" min="-99" max="99" data-tooltip="Higher values appear in front">
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Trim Video</div>
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label class="input-label">Start Time (s)</label>
-                                <input type="number" class="input-field" id="bgStartTime" value="0" step="0.1" min="0">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">End Time (s)</label>
-                                <input type="number" class="input-field" id="bgEndTime" value="0" step="0.1" min="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Audio</div>
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label class="input-label">Volume</label>
-                                <input type="range" class="input-field" id="bgVolume" min="0" max="1" step="0.1" value="0.3" style="padding: 0;" data-tooltip="Adjust background video volume (0-100%)">
-                                <span id="bgVolumeValue" style="font-size: 12px; color: #666;">30%</span>
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">Mute</label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="bgMute" style="width: 18px; height: 18px;" data-tooltip="Mute background video audio">
-                                    <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Visual Effects</div>
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label class="input-label">Opacity</label>
-                                <input type="range" class="input-field" id="bgOpacity" min="0" max="1" step="0.1" value="1" style="padding: 0;" data-tooltip="Adjust background transparency (0-100%)">
-                                <span id="bgOpacityValue" style="font-size: 12px; color: #666;">100%</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -905,11 +842,6 @@
                                 <label class="input-label">Background Color</label>
                                 <input type="color" class="input-field" id="subBackgroundColor" value="#000000" style="height: 40px;">
                             </div>
-                            <div class="input-group">
-                                <label class="input-label">Background Opacity</label>
-                                <input type="range" class="input-field" id="subBackgroundOpacity" min="0" max="1" step="0.1" value="0.7" style="padding: 0;">
-                                <span id="subBackgroundOpacityValue" style="font-size: 12px; color: #666;">70%</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -950,12 +882,7 @@
                 height: 978,
                 x: -292,
                 y: 1021,
-                zIndex: -1,
-                startTime: 0,
-                endTime: 0,
-                volume: 0.3,
-                mute: false,
-                opacity: 1.0
+                zIndex: -1
             },
             subtitles: {
                 fontFamily: "Permanent Marker",
@@ -967,7 +894,6 @@
                 textColor: "#FFFFFF",
                 outlineColor: "#000000",
                 backgroundColor: "#000000",
-                backgroundOpacity: 0.7,
                 fontWeight: "bold",
                 alignment: "center",
                 zIndex: 1
@@ -1016,41 +942,21 @@
         // Update volume percentage displays
         function updateVolumeDisplays() {
             const mainVolume = document.getElementById('mainVolume');
-            const bgVolume = document.getElementById('bgVolume');
-            const bgOpacity = document.getElementById('bgOpacity');
-            const subBackgroundOpacity = document.getElementById('subBackgroundOpacity');
 
             if (mainVolume) {
                 document.getElementById('mainVolumeValue').textContent = Math.round(mainVolume.value * 100) + '%';
                 mainVolume.addEventListener('input', (e) => {
-                    document.getElementById('mainVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
+                    const volumeValue = parseFloat(e.target.value);
+                    document.getElementById('mainVolumeValue').textContent = Math.round(volumeValue * 100) + '%';
+
+                    // When volume is adjusted from 0, uncheck mute
+                    const mainMute = document.getElementById('mainMute');
+                    if (volumeValue > 0 && mainMute.checked) {
+                        mainMute.checked = false;
+                    }
+
                     updateLegend();
                     updateCanvas();
-                });
-            }
-
-            if (bgVolume) {
-                document.getElementById('bgVolumeValue').textContent = Math.round(bgVolume.value * 100) + '%';
-                bgVolume.addEventListener('input', (e) => {
-                    document.getElementById('bgVolumeValue').textContent = Math.round(e.target.value * 100) + '%';
-                    updateLegend();
-                });
-            }
-
-            if (bgOpacity) {
-                document.getElementById('bgOpacityValue').textContent = Math.round(bgOpacity.value * 100) + '%';
-                bgOpacity.addEventListener('input', (e) => {
-                    document.getElementById('bgOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
-                    updateLegend();
-                    updateCanvas();
-                });
-            }
-
-            if (subBackgroundOpacity) {
-                document.getElementById('subBackgroundOpacityValue').textContent = Math.round(subBackgroundOpacity.value * 100) + '%';
-                subBackgroundOpacity.addEventListener('input', (e) => {
-                    document.getElementById('subBackgroundOpacityValue').textContent = Math.round(e.target.value * 100) + '%';
-                    updateLegend();
                 });
             }
         }
@@ -1065,9 +971,6 @@
             // Get current values
             const mainVolume = parseFloat(document.getElementById('mainVolume').value);
             const mainMute = document.getElementById('mainMute').checked;
-            const bgVolume = parseFloat(document.getElementById('bgVolume').value);
-            const bgMute = document.getElementById('bgMute').checked;
-            const bgOpacity = parseFloat(document.getElementById('bgOpacity').value);
 
             // Main video audio indicator
             const mainIndicator = document.createElement('div');
@@ -1076,23 +979,6 @@
             mainIndicator.style.top = '10px';
             mainIndicator.style.right = '10px';
             overlay.appendChild(mainIndicator);
-
-            // Background video indicators
-            const bgIndicator = document.createElement('div');
-            bgIndicator.className = 'indicator-badge ' + (bgMute ? 'muted' : 'volume');
-            bgIndicator.textContent = bgMute ? '🔇 BG Muted' : `🔊 BG ${Math.round(bgVolume * 100)}%`;
-            bgIndicator.style.bottom = '50px';
-            bgIndicator.style.right = '10px';
-            overlay.appendChild(bgIndicator);
-
-            if (bgOpacity < 1.0) {
-                const opacityIndicator = document.createElement('div');
-                opacityIndicator.className = 'indicator-badge opacity';
-                opacityIndicator.textContent = `🌓 ${Math.round(bgOpacity * 100)}% Opacity`;
-                opacityIndicator.style.bottom = '10px';
-                opacityIndicator.style.right = '10px';
-                overlay.appendChild(opacityIndicator);
-            }
         }
 
         // Update legend with current settings
@@ -1102,9 +988,6 @@
             const mainMute = document.getElementById('mainMute')?.checked;
 
             const bgZIndex = document.getElementById('bgZIndex')?.value || -1;
-            const bgVolume = document.getElementById('bgVolume')?.value || 0.3;
-            const bgMute = document.getElementById('bgMute')?.checked;
-            const bgOpacity = document.getElementById('bgOpacity')?.value || 1;
 
             const subZIndex = document.getElementById('subZIndex')?.value || 1;
             const subTextColor = document.getElementById('subTextColor')?.value || '#FFFFFF';
@@ -1113,7 +996,7 @@
                 `Z-Index: ${mainZIndex}, ${mainMute ? 'Muted' : 'Volume: ' + Math.round(mainVolume * 100) + '%'}`;
 
             document.getElementById('bgLegendDetail').textContent =
-                `Z-Index: ${bgZIndex}, ${bgMute ? 'Muted' : 'Volume: ' + Math.round(bgVolume * 100) + '%'}, Opacity: ${Math.round(bgOpacity * 100)}%`;
+                `Z-Index: ${bgZIndex}`;
 
             document.getElementById('subLegendDetail').textContent =
                 `Z-Index: ${subZIndex}, Color: ${subTextColor}`;
@@ -1171,21 +1054,6 @@
                 content.classList.toggle('collapsed');
                 btn.classList.toggle('collapsed');
             }
-        }
-
-        // Quick Action: Mute Background
-        function quickMuteBackground() {
-            document.getElementById('bgMute').checked = true;
-            updateLegend();
-            updateCanvas();
-        }
-
-        // Quick Action: Dim Background
-        function quickDimBackground() {
-            document.getElementById('bgOpacity').value = 0.5;
-            document.getElementById('bgOpacityValue').textContent = '50%';
-            updateLegend();
-            updateCanvas();
         }
 
         // Quick Action: Reset All
@@ -1265,15 +1133,18 @@
                 }
             });
 
-            ['mainMute', 'bgMute'].forEach(id => {
-                const elem = document.getElementById(id);
-                if (elem) {
-                    elem.addEventListener('change', () => {
-                        updateLegend();
-                        updateCanvas();
-                    });
-                }
-            });
+            const mainMute = document.getElementById('mainMute');
+            if (mainMute) {
+                mainMute.addEventListener('change', () => {
+                    // When mute is checked, set volume to 0
+                    if (mainMute.checked) {
+                        document.getElementById('mainVolume').value = 0;
+                        document.getElementById('mainVolumeValue').textContent = '0%';
+                    }
+                    updateLegend();
+                    updateCanvas();
+                });
+            }
 
             const subTextColor = document.getElementById('subTextColor');
             if (subTextColor) subTextColor.addEventListener('input', updateLegend);
@@ -1318,11 +1189,6 @@
             document.getElementById('bgWidth').value = config.background.width;
             document.getElementById('bgHeight').value = config.background.height;
             document.getElementById('bgZIndex').value = config.background.zIndex;
-            document.getElementById('bgStartTime').value = config.background.startTime;
-            document.getElementById('bgEndTime').value = config.background.endTime || clip.duration || 0;
-            document.getElementById('bgVolume').value = config.background.volume;
-            document.getElementById('bgMute').checked = config.background.mute;
-            document.getElementById('bgOpacity').value = config.background.opacity;
 
             // Update subtitle fields
             document.getElementById('subX').value = config.subtitles.x;
@@ -1337,7 +1203,6 @@
             document.getElementById('subOutlineColor').value = config.subtitles.outlineColor;
             document.getElementById('subOutlineWidth').value = config.subtitles.outlineWidth;
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
-            document.getElementById('subBackgroundOpacity').value = config.subtitles.backgroundOpacity;
 
             // Update volume displays
             updateVolumeDisplays();
@@ -1388,11 +1253,6 @@
             config.background.width = parseInt(document.getElementById('bgWidth').value);
             config.background.height = parseInt(document.getElementById('bgHeight').value);
             config.background.zIndex = parseInt(document.getElementById('bgZIndex').value);
-            config.background.startTime = parseFloat(document.getElementById('bgStartTime').value);
-            config.background.endTime = parseFloat(document.getElementById('bgEndTime').value);
-            config.background.volume = parseFloat(document.getElementById('bgVolume').value);
-            config.background.mute = document.getElementById('bgMute').checked;
-            config.background.opacity = parseFloat(document.getElementById('bgOpacity').value);
 
             // Save subtitle config
             config.subtitles.x = parseInt(document.getElementById('subX').value);
@@ -1407,7 +1267,6 @@
             config.subtitles.outlineColor = document.getElementById('subOutlineColor').value;
             config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
-            config.subtitles.backgroundOpacity = parseFloat(document.getElementById('subBackgroundOpacity').value);
         }
 
         // Navigation
@@ -1467,7 +1326,6 @@
             const mainZIndex = parseInt(document.getElementById('mainZIndex').value) || 0;
             const bgZIndex = parseInt(document.getElementById('bgZIndex').value) || -1;
             const subZIndex = parseInt(document.getElementById('subZIndex').value) || 1;
-            const bgOpacity = parseFloat(document.getElementById('bgOpacity').value) || 1;
             const mainVolume = parseFloat(document.getElementById('mainVolume').value) || 1;
             const mainMute = document.getElementById('mainMute').checked;
 
@@ -1478,7 +1336,6 @@
             bgPreview.style.width = (bgWidth * SCALE) + 'px';
             bgPreview.style.height = (bgHeight * SCALE) + 'px';
             bgPreview.style.zIndex = bgZIndex;
-            bgPreview.style.opacity = bgOpacity;
 
             // Position video preview
             const videoPreview = document.getElementById('videoPreview');
@@ -1529,11 +1386,6 @@
                 document.getElementById('bgWidth').value = DEFAULTS.background.width;
                 document.getElementById('bgHeight').value = DEFAULTS.background.height;
                 document.getElementById('bgZIndex').value = DEFAULTS.background.zIndex;
-                document.getElementById('bgStartTime').value = DEFAULTS.background.startTime;
-                document.getElementById('bgEndTime').value = DEFAULTS.background.endTime;
-                document.getElementById('bgVolume').value = DEFAULTS.background.volume;
-                document.getElementById('bgMute').checked = DEFAULTS.background.mute;
-                document.getElementById('bgOpacity').value = DEFAULTS.background.opacity;
             } else if (layer === 'subtitles') {
                 document.getElementById('subX').value = DEFAULTS.subtitles.x;
                 document.getElementById('subY').value = DEFAULTS.subtitles.y;
@@ -1546,7 +1398,6 @@
                 document.getElementById('subOutlineColor').value = DEFAULTS.subtitles.outlineColor;
                 document.getElementById('subOutlineWidth').value = DEFAULTS.subtitles.outlineWidth;
                 document.getElementById('subBackgroundColor').value = DEFAULTS.subtitles.backgroundColor;
-                document.getElementById('subBackgroundOpacity').value = DEFAULTS.subtitles.backgroundOpacity;
             }
             updateVolumeDisplays();
             updateCanvas();
@@ -1684,11 +1535,7 @@
                         height: config.background.height,
                         x: config.background.x,
                         y: config.background.y,
-                        "z-index": config.background.zIndex,
-                        seek: config.background.startTime,
-                        duration: config.background.endTime - config.background.startTime || -1,
-                        volume: config.background.mute ? 0 : config.background.volume,
-                        opacity: config.background.opacity
+                        "z-index": config.background.zIndex
                     },
                     layers: [
                         {
@@ -1716,7 +1563,6 @@
                         outlineColor: config.subtitles.outlineColor,
                         outlineWidth: config.subtitles.outlineWidth,
                         backgroundColor: config.subtitles.backgroundColor,
-                        backgroundOpacity: config.subtitles.backgroundOpacity,
                         "z-index": config.subtitles.zIndex
                     }
                 });
