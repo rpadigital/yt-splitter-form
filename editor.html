@@ -532,7 +532,7 @@
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="810" height="1440"></canvas>
                     <img id="bgPreview" class="preview-bg-layer"
-                         src="https://hypixel.net/attachments/2013-09-28_07-46-25-png.9684/"
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23333'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%23666' font-family='Arial' font-size='14'%3EBackground%3C/text%3E%3C/svg%3E"
                          alt="Background">
                     <video id="videoPreview" class="preview-video-layer"
                            loop playsinline crossorigin="anonymous">
@@ -1487,8 +1487,10 @@
             videoPreview.style.width = (mainWidth * SCALE) + 'px';
             videoPreview.style.height = (mainHeight * SCALE) + 'px';
             videoPreview.style.zIndex = mainZIndex;
-            videoPreview.volume = mainMute ? 0 : mainVolume;
-            videoPreview.muted = mainMute;
+            // Mute if checkbox is checked OR if volume is 0
+            videoPreview.muted = mainMute || mainVolume === 0;
+            // Set volume (only matters when not muted)
+            videoPreview.volume = mainVolume;
 
             // Update canvas z-index (for subtitles overlay)
             canvas.style.zIndex = subZIndex;
