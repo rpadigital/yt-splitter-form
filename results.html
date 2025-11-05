@@ -580,60 +580,6 @@
             margin-top: 8px;
         }
 
-        /* B-Roll Selection Styles */
-        .b-roll-section {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 20px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .b-roll-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .b-roll-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .b-roll-option {
-            padding: 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            background: white;
-        }
-
-        .b-roll-option:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-            transform: translateY(-2px);
-        }
-
-        .b-roll-option input[type="radio"] {
-            display: none;
-        }
-
-        .b-roll-option input[type="radio"]:checked + span {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .b-roll-option span {
-            display: block;
-            color: #333;
-            font-size: 16px;
-        }
-
         /* Action Buttons */
         .action-buttons {
             display: grid;
@@ -780,21 +726,6 @@
                     <span id="selectedCount">0</span> clips selected
                 </div>
 
-                <!-- B-Roll Selection Section -->
-                <div class="b-roll-section" id="bRollSection" style="display: none;">
-                    <h3>Select Background Footage</h3>
-                    <div class="b-roll-options">
-                        <label class="b-roll-option">
-                            <input type="radio" name="bRollType" value="minecraft" checked>
-                            <span>Minecraft Gameplay</span>
-                        </label>
-                        <label class="b-roll-option">
-                            <input type="radio" name="bRollType" value="subway_surfer">
-                            <span>Subway Surfer Gameplay</span>
-                        </label>
-                    </div>
-                </div>
-
                 <!-- Action Buttons -->
                 <div class="action-buttons">
                     <button class="primary-btn" id="generateBRollBtn" onclick="generateBRoll()" disabled>
@@ -844,17 +775,14 @@
 
             document.getElementById('selectedCount').textContent = count;
 
-            // Show B-Roll section and enable buttons if clips selected
-            const bRollSection = document.getElementById('bRollSection');
+            // Enable buttons if clips selected
             const generateBtn = document.getElementById('generateBRollBtn');
             const editorBtn = document.getElementById('continueToEditorBtn');
 
             if (count > 0) {
-                bRollSection.style.display = 'block';
                 generateBtn.disabled = false;
                 editorBtn.disabled = false;
             } else {
-                bRollSection.style.display = 'none';
                 generateBtn.disabled = true;
                 editorBtn.disabled = true;
             }
@@ -879,7 +807,7 @@
         // Generate B-Roll
         async function generateBRoll() {
             const selectedClips = getSelectedClips();
-            const bRollType = document.querySelector('input[name="bRollType"]:checked').value;
+            const bRollType = 'minecraft'; // Default to Minecraft gameplay
             const generateBtn = document.getElementById('generateBRollBtn');
 
             const payload = {
@@ -921,7 +849,7 @@
         // Continue to editor
         function continueToEditor() {
             const selectedClips = getSelectedClips();
-            const bRollType = document.querySelector('input[name="bRollType"]:checked').value;
+            const bRollType = 'minecraft'; // Default to Minecraft gameplay
 
             // Store in sessionStorage
             const editorData = {
