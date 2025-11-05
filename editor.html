@@ -535,7 +535,7 @@
                          src="https://hypixel.net/attachments/2013-09-28_07-46-25-png.9684/"
                          alt="Background">
                     <video id="videoPreview" class="preview-video-layer"
-                           muted loop playsinline>
+                           loop playsinline crossorigin="anonymous">
                     </video>
                     <!-- Visual Indicators Overlay -->
                     <div class="canvas-overlay" id="canvasOverlay"></div>
@@ -1332,9 +1332,24 @@
 
             // Load video preview
             const videoPreview = document.getElementById('videoPreview');
+            console.log('Loading video from URL:', clip.url);
+
+            videoPreview.onerror = function() {
+                console.error('Failed to load video from:', clip.url);
+                alert(`Failed to load video: ${clip.url}\n\nPlease check:\n1. Video file exists\n2. URL is accessible\n3. CORS is configured on server`);
+            };
+
+            videoPreview.onloadeddata = function() {
+                console.log('Video loaded successfully');
+            };
+
             videoPreview.src = clip.url;
+            videoPreview.volume = 1.0; // Set volume to 100%
             videoPreview.load();
-            videoPreview.play().catch(e => console.log('Video autoplay prevented'));
+            videoPreview.play().catch(e => {
+                console.log('Video autoplay prevented:', e);
+                // Don't alert on autoplay prevention, just log it
+            });
 
             updateCanvas();
             updateLegend();
