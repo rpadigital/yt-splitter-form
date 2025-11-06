@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Position Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Katibeh&family=Lalezar&family=Lobster&family=Luckiest+Guy&family=Pacifico&family=Shrikhand&family=Fredericka+the+Great&family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -503,6 +504,130 @@
             opacity: 1;
         }
 
+        /* Subtitle Preview Section */
+        .subtitle-preview-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .subtitle-preview-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .subtitle-preview-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 40px 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .subtitle-preview-text {
+            text-align: center;
+            line-height: 1.4;
+            max-width: 90%;
+            position: relative;
+        }
+
+        .subtitle-preview-text .word {
+            display: inline-block;
+            margin: 0 4px;
+            position: relative;
+        }
+
+        /* Classic style - static text */
+        .subtitle-preview-text.style-classic .word {
+            animation: none;
+        }
+
+        /* Classic Progressive - word by word fade in */
+        .subtitle-preview-text.style-classic-progressive .word {
+            opacity: 0;
+            animation: fadeInWord 0.3s ease-in forwards;
+        }
+
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(1) { animation-delay: 0s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(2) { animation-delay: 0.3s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(3) { animation-delay: 0.6s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(4) { animation-delay: 0.9s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(5) { animation-delay: 1.2s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(6) { animation-delay: 1.5s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(7) { animation-delay: 1.8s; }
+
+        @keyframes fadeInWord {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Classic One Word - one word at a time cycling */
+        .subtitle-preview-text.style-classic-one-word .word {
+            opacity: 0;
+            animation: cycleWord 7s infinite;
+        }
+
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(1) { animation-delay: 0s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(2) { animation-delay: 1s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(3) { animation-delay: 2s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(4) { animation-delay: 3s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(5) { animation-delay: 4s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(6) { animation-delay: 5s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(7) { animation-delay: 6s; }
+
+        @keyframes cycleWord {
+            0%, 14.28% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            14.29%, 100% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Boxed Line - full line with background box */
+        .subtitle-preview-text.style-boxed-line .word {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 12px;
+            border-radius: 4px;
+            animation: none;
+        }
+
+        /* Boxed Word - each word in individual boxes */
+        .subtitle-preview-text.style-boxed-word .word {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 6px 10px;
+            margin: 4px;
+            border-radius: 4px;
+            opacity: 0;
+            animation: fadeInWord 0.3s ease-in forwards;
+        }
+
+        .subtitle-preview-text.style-boxed-word .word:nth-child(1) { animation-delay: 0s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(2) { animation-delay: 0.2s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(3) { animation-delay: 0.4s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(4) { animation-delay: 0.6s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(5) { animation-delay: 0.8s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(6) { animation-delay: 1.0s; }
+        .subtitle-preview-text.style-boxed-word .word:nth-child(7) { animation-delay: 1.2s; }
+
         @media (max-width: 1200px) {
             .editor-layout {
                 grid-template-columns: 1fr;
@@ -580,6 +705,23 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Subtitle Preview -->
+                <div class="subtitle-preview-section">
+                    <div class="subtitle-preview-label">Subtitle Preview</div>
+                    <div class="subtitle-preview-container" id="subtitlePreviewContainer">
+                        <div class="subtitle-preview-text" id="subtitlePreviewText">
+                            <span class="word">This</span>
+                            <span class="word">is</span>
+                            <span class="word">how</span>
+                            <span class="word">your</span>
+                            <span class="word">subtitles</span>
+                            <span class="word">will</span>
+                            <span class="word">look</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="help-text">
                     Drag rectangles on canvas or use controls to adjust positioning
                 </div>
@@ -802,6 +944,13 @@
                                 <option value="Oswald">Oswald</option>
                                 <option value="Raleway">Raleway</option>
                                 <option value="Poppins">Poppins</option>
+                                <option value="Katibeh">Katibeh</option>
+                                <option value="Lalezar">Lalezar</option>
+                                <option value="Lobster">Lobster</option>
+                                <option value="Luckiest Guy">Luckiest Guy</option>
+                                <option value="Pacifico">Pacifico</option>
+                                <option value="Shrikhand">Shrikhand</option>
+                                <option value="Fredericka the Great">Fredericka the Great</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -812,6 +961,16 @@
                                 <option value="700">700</option>
                                 <option value="800">800</option>
                                 <option value="900">900</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Subtitle Style</label>
+                            <select class="input-field" id="subStyle">
+                                <option value="classic">Classic</option>
+                                <option value="classic-progressive">Classic Progressive</option>
+                                <option value="classic-one-word">Classic One Word</option>
+                                <option value="boxed-line">Boxed Line</option>
+                                <option value="boxed-word">Boxed Word</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -921,7 +1080,8 @@
                 backgroundColor: "#000000",
                 fontWeight: "bold",
                 alignment: "center",
-                zIndex: 2
+                zIndex: 2,
+                style: "classic"
             }
         };
 
@@ -1202,9 +1362,19 @@
                 if (elem) elem.addEventListener('input', updateTimeline);
             });
 
+            // Setup event listeners for subtitle preview updates
+            ['subFontFamily', 'subFontSize', 'subFontWeight', 'subStyle', 'subTextColor', 'subOutlineColor', 'subOutlineWidth'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) {
+                    elem.addEventListener('input', updateSubtitlePreview);
+                    elem.addEventListener('change', updateSubtitlePreview);
+                }
+            });
+
             // Initialize visual feedback
             updateLegend();
             updateTimeline();
+            updateSubtitlePreview();
         });
 
         // Load clip configuration
@@ -1259,6 +1429,7 @@
             document.getElementById('subOutlineColor').value = config.subtitles.outlineColor;
             document.getElementById('subOutlineWidth').value = config.subtitles.outlineWidth;
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
+            document.getElementById('subStyle').value = config.subtitles.style || "classic";
 
             // Update volume displays
             updateVolumeDisplays();
@@ -1286,6 +1457,7 @@
 
             updateCanvas();
             updateLegend();
+            updateSubtitlePreview();
         }
 
         // Save current clip configuration
@@ -1321,6 +1493,7 @@
             config.subtitles.outlineColor = document.getElementById('subOutlineColor').value;
             config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
+            config.subtitles.style = document.getElementById('subStyle').value;
         }
 
         // Navigation
@@ -1422,6 +1595,51 @@
             ctx.fill();
         }
 
+        // Update subtitle preview
+        function updateSubtitlePreview() {
+            const previewText = document.getElementById('subtitlePreviewText');
+            if (!previewText) return;
+
+            // Get all subtitle settings
+            const fontFamily = document.getElementById('subFontFamily').value;
+            const fontSize = parseInt(document.getElementById('subFontSize').value) || 125;
+            const fontWeight = document.getElementById('subFontWeight').value;
+            const textColor = document.getElementById('subTextColor').value;
+            const outlineColor = document.getElementById('subOutlineColor').value;
+            const outlineWidth = parseInt(document.getElementById('subOutlineWidth').value) || 10;
+            const style = document.getElementById('subStyle').value || 'classic';
+
+            // Scale font size for preview (divide by 5 for reasonable display)
+            const previewFontSize = fontSize / 5;
+
+            // Apply font and color styles
+            previewText.style.fontFamily = fontFamily;
+            previewText.style.fontSize = previewFontSize + 'px';
+            previewText.style.fontWeight = fontWeight;
+            previewText.style.color = textColor;
+
+            // Apply text stroke (outline)
+            if (outlineWidth > 0) {
+                const previewOutlineWidth = outlineWidth / 5;
+                previewText.style.webkitTextStroke = `${previewOutlineWidth}px ${outlineColor}`;
+                previewText.style.textStroke = `${previewOutlineWidth}px ${outlineColor}`;
+            } else {
+                previewText.style.webkitTextStroke = 'none';
+                previewText.style.textStroke = 'none';
+            }
+
+            // Remove all existing style classes
+            previewText.classList.remove('style-classic', 'style-classic-progressive', 'style-classic-one-word', 'style-boxed-line', 'style-boxed-word');
+
+            // Add the appropriate style class
+            previewText.classList.add('style-' + style);
+
+            // Restart animations by cloning and replacing the element
+            const parent = previewText.parentNode;
+            const newText = previewText.cloneNode(true);
+            parent.replaceChild(newText, previewText);
+        }
+
         // Reset layer to default values
         function resetLayer(layer) {
             if (layer === 'main') {
@@ -1450,9 +1668,11 @@
                 document.getElementById('subOutlineColor').value = DEFAULTS.subtitles.outlineColor;
                 document.getElementById('subOutlineWidth').value = DEFAULTS.subtitles.outlineWidth;
                 document.getElementById('subBackgroundColor').value = DEFAULTS.subtitles.backgroundColor;
+                document.getElementById('subStyle').value = DEFAULTS.subtitles.style;
             }
             updateVolumeDisplays();
             updateCanvas();
+            updateSubtitlePreview();
         }
 
         // Setup drag-and-drop
@@ -1615,7 +1835,8 @@
                         outlineColor: config.subtitles.outlineColor,
                         outlineWidth: config.subtitles.outlineWidth,
                         backgroundColor: config.subtitles.backgroundColor,
-                        "z-index": config.subtitles.zIndex
+                        "z-index": config.subtitles.zIndex,
+                        style: config.subtitles.style || "classic"
                     }
                 });
 
