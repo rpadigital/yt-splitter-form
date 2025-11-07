@@ -700,9 +700,6 @@
                         <div class="timeline-segment clips" style="flex: 1" id="timelineClips">
                             Main Clips
                         </div>
-                        <div class="timeline-segment disabled outro" style="flex: 0" id="timelineOutro">
-                            No Outro
-                        </div>
                     </div>
                 </div>
 
@@ -750,22 +747,21 @@
                     </div>
                 </div>
 
-                <!-- Intro/Outro Scenes -->
+                <!-- Intro Scene -->
                 <div class="layer-controls">
                     <div class="layer-title" style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; align-items: center;">
                             <div class="layer-indicator" style="background: rgba(255, 193, 7, 0.5);"></div>
-                            Intro / Outro Scenes (Global)
+                            Intro Scene (Optional)
                         </div>
-                        <button class="collapse-btn" onclick="toggleSection('introOutro')" data-tooltip="Collapse/Expand section">▼</button>
+                        <button class="collapse-btn" onclick="toggleSection('intro')" data-tooltip="Collapse/Expand section">▼</button>
                     </div>
-                    <div class="collapsible-content" id="introOutroContent">
+                    <div class="collapsible-content" id="introContent">
 
-                    <!-- Intro Scene -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" id="enableIntro" onchange="toggleIntroOutro()" style="margin-right: 8px; width: 18px; height: 18px;">
-                            <span style="font-weight: 600; color: #333;">Add Intro Scene</span>
+                            <input type="checkbox" id="enableIntro" onchange="toggleIntro()" style="margin-right: 8px; width: 18px; height: 18px;">
+                            <span style="font-weight: 600; color: #333;">Add Intro Before Main Clip</span>
                         </label>
                         <div id="introControls" style="display: none;">
                             <div class="input-group" style="margin-bottom: 10px;">
@@ -779,35 +775,16 @@
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">End Time (s)</label>
-                                    <input type="number" class="input-field" id="introEndTime" value="5" step="0.1" min="0">
+                                    <input type="number" class="input-field" id="introEndTime" value="2" step="0.1" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Fade Out Duration (s)</label>
+                                    <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Outro Scene -->
-                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" id="enableOutro" onchange="toggleIntroOutro()" style="margin-right: 8px; width: 18px; height: 18px;">
-                            <span style="font-weight: 600; color: #333;">Add Outro Scene</span>
-                        </label>
-                        <div id="outroControls" style="display: none;">
-                            <div class="input-group" style="margin-bottom: 10px;">
-                                <label class="input-label">Outro Video URL</label>
-                                <input type="text" class="input-field" id="outroVideoUrl" placeholder="https://example.com/outro.mp4">
-                            </div>
-                            <div class="input-grid">
-                                <div class="input-group">
-                                    <label class="input-label">Start Time (s)</label>
-                                    <input type="number" class="input-field" id="outroStartTime" value="0" step="0.1" min="0">
-                                </div>
-                                <div class="input-group">
-                                    <label class="input-label">End Time (s)</label>
-                                    <input type="number" class="input-field" id="outroEndTime" value="5" step="0.1" min="0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     </div><!-- End collapsible-content -->
                 </div>
 
@@ -840,6 +817,10 @@
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
                             <input type="number" class="input-field" id="mainZIndex" value="0" min="-99" max="99" data-tooltip="Higher values appear in front">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Start video from (seconds)</label>
+                            <input type="number" class="input-field" id="mainSeek" value="0" step="0.1" min="0" data-tooltip="Skip the first X seconds of the main clip">
                         </div>
                     </div>
 
@@ -913,7 +894,13 @@
                         </div>
                         <button class="reset-btn" onclick="resetLayer('subtitles')">Reset</button>
                     </div>
-                    <div class="input-grid">
+                    <div style="margin-bottom: 10px;">
+                        <label>
+                            <input type="checkbox" id="enableSubtitles" checked onchange="toggleSubtitles()">
+                            <span>Enable subtitles for this clip</span>
+                        </label>
+                    </div>
+                    <div class="input-grid" id="subtitleControls">
                         <div class="input-group">
                             <label class="input-label">X Position</label>
                             <input type="number" class="input-field" id="subX" oninput="updateCanvas()">
@@ -1061,8 +1048,7 @@
                 x: -306,
                 y: -23,
                 zIndex: 0,
-                startTime: 0,
-                endTime: 0,
+                seek: 0,  // Skip first X seconds
                 volume: 1.0,
                 mute: false
             },
@@ -1071,9 +1057,11 @@
                 height: 978,
                 x: -292,
                 y: 1021,
-                zIndex: 1
+                zIndex: 1,
+                bRollType: "minecraft"  // Default B-roll type (per-clip)
             },
             subtitles: {
+                enabled: true,  // Enable subtitles by default
                 fontFamily: "Permanent Marker",
                 maxWordsPerLine: 1,
                 fontSize: 125,
@@ -1120,13 +1108,18 @@
             }, 100);
         }
 
-        // Toggle intro/outro controls visibility
-        function toggleIntroOutro() {
+        // Toggle intro controls visibility
+        function toggleIntro() {
             const enableIntro = document.getElementById('enableIntro').checked;
-            const enableOutro = document.getElementById('enableOutro').checked;
             document.getElementById('introControls').style.display = enableIntro ? 'block' : 'none';
-            document.getElementById('outroControls').style.display = enableOutro ? 'block' : 'none';
             updateTimeline();
+        }
+
+        // Toggle subtitle controls visibility
+        function toggleSubtitles() {
+            const enableSubtitles = document.getElementById('enableSubtitles').checked;
+            document.getElementById('subtitleControls').style.display = enableSubtitles ? 'grid' : 'none';
+            updateCanvas();
         }
 
         // Update volume percentage displays
@@ -1202,15 +1195,12 @@
         // Update timeline visualization
         function updateTimeline() {
             const enableIntro = document.getElementById('enableIntro').checked;
-            const enableOutro = document.getElementById('enableOutro').checked;
-
             const introSegment = document.getElementById('timelineIntro');
             const clipsSegment = document.getElementById('timelineClips');
-            const outroSegment = document.getElementById('timelineOutro');
 
             if (enableIntro) {
                 const introStart = parseFloat(document.getElementById('introStartTime').value) || 0;
-                const introEnd = parseFloat(document.getElementById('introEndTime').value) || 5;
+                const introEnd = parseFloat(document.getElementById('introEndTime').value) || 2;
                 const introDuration = introEnd - introStart;
 
                 introSegment.classList.remove('disabled');
@@ -1222,32 +1212,18 @@
                 introSegment.textContent = 'No Intro';
             }
 
-            if (enableOutro) {
-                const outroStart = parseFloat(document.getElementById('outroStartTime').value) || 0;
-                const outroEnd = parseFloat(document.getElementById('outroEndTime').value) || 5;
-                const outroDuration = outroEnd - outroStart;
-
-                outroSegment.classList.remove('disabled');
-                outroSegment.style.flex = outroDuration / 10; // Scale for visual proportion
-                outroSegment.textContent = `Outro (${outroDuration.toFixed(1)}s)`;
-            } else {
-                outroSegment.classList.add('disabled');
-                outroSegment.style.flex = 0;
-                outroSegment.textContent = 'No Outro';
-            }
-
             // Clips always shown
             clipsSegment.textContent = `Main Clips (${editorData?.selected_clips?.length || 0})`;
         }
 
-        // Change B-roll footage
+        // Change B-roll footage (per-clip)
         function changeBRoll() {
             const bRollSelect = document.getElementById('bRollSelect');
             const selectedBRoll = bRollSelect.value;
 
-            // Update editorData with new b_roll_type
-            if (editorData) {
-                editorData.b_roll_type = selectedBRoll;
+            // Save B-roll type for current clip
+            if (clipConfigurations[currentClipIndex]) {
+                clipConfigurations[currentClipIndex].background.bRollType = selectedBRoll;
             }
 
             // Update background preview image
@@ -1362,7 +1338,7 @@
             if (subTextColor) subTextColor.addEventListener('input', updateLegend);
 
             // Setup event listeners for timeline updates
-            ['introStartTime', 'introEndTime', 'outroStartTime', 'outroEndTime'].forEach(id => {
+            ['introStartTime', 'introEndTime', 'introFadeOut'].forEach(id => {
                 const elem = document.getElementById(id);
                 if (elem) elem.addEventListener('input', updateTimeline);
             });
@@ -1394,14 +1370,14 @@
             document.getElementById('prevBtn').disabled = index === 0;
             document.getElementById('nextBtn').disabled = index === editorData.selected_clips.length - 1;
 
-            // Update B-roll selection
+            // Update B-roll selection (per-clip)
             const bRollSelect = document.getElementById('bRollSelect');
-            if (bRollSelect && editorData.b_roll_type) {
-                bRollSelect.value = editorData.b_roll_type;
+            if (bRollSelect && config.background.bRollType) {
+                bRollSelect.value = config.background.bRollType;
                 // Update the preview image to match the selection
                 const bgPreview = document.getElementById('bgPreview');
-                if (BROLL_OPTIONS[editorData.b_roll_type]) {
-                    bgPreview.src = BROLL_OPTIONS[editorData.b_roll_type].url;
+                if (BROLL_OPTIONS[config.background.bRollType]) {
+                    bgPreview.src = BROLL_OPTIONS[config.background.bRollType].url;
                 }
             }
 
@@ -1413,6 +1389,7 @@
             document.getElementById('mainZIndex').value = config.mainVideo.zIndex;
             document.getElementById('mainVolume').value = config.mainVideo.volume;
             document.getElementById('mainMute').checked = config.mainVideo.mute;
+            document.getElementById('mainSeek').value = config.mainVideo.seek || 0;
 
             // Update background video fields
             document.getElementById('bgX').value = config.background.x;
@@ -1422,6 +1399,8 @@
             document.getElementById('bgZIndex').value = config.background.zIndex;
 
             // Update subtitle fields
+            document.getElementById('enableSubtitles').checked = config.subtitles.enabled !== false;  // Default to true if not set
+            document.getElementById('subtitleControls').style.display = config.subtitles.enabled !== false ? 'grid' : 'none';
             document.getElementById('subX').value = config.subtitles.x;
             document.getElementById('subY').value = config.subtitles.y;
             document.getElementById('subFontSize').value = config.subtitles.fontSize;
@@ -1477,6 +1456,7 @@
             config.mainVideo.zIndex = parseInt(document.getElementById('mainZIndex').value);
             config.mainVideo.volume = parseFloat(document.getElementById('mainVolume').value);
             config.mainVideo.mute = document.getElementById('mainMute').checked;
+            config.mainVideo.seek = parseFloat(document.getElementById('mainSeek').value) || 0;
 
             // Save background video config
             config.background.x = parseInt(document.getElementById('bgX').value);
@@ -1484,8 +1464,10 @@
             config.background.width = parseInt(document.getElementById('bgWidth').value);
             config.background.height = parseInt(document.getElementById('bgHeight').value);
             config.background.zIndex = parseInt(document.getElementById('bgZIndex').value);
+            config.background.bRollType = document.getElementById('bRollSelect').value;
 
             // Save subtitle config
+            config.subtitles.enabled = document.getElementById('enableSubtitles').checked;
             config.subtitles.x = parseInt(document.getElementById('subX').value);
             config.subtitles.y = parseInt(document.getElementById('subY').value);
             config.subtitles.fontSize = parseInt(document.getElementById('subFontSize').value);
@@ -1769,18 +1751,13 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
 
-            // Get intro/outro configuration
+            // Get intro configuration
             const enableIntro = document.getElementById('enableIntro').checked;
-            const enableOutro = document.getElementById('enableOutro').checked;
             const introConfig = enableIntro ? {
                 videoUrl: document.getElementById('introVideoUrl').value,
                 startTime: parseFloat(document.getElementById('introStartTime').value),
-                endTime: parseFloat(document.getElementById('introEndTime').value)
-            } : null;
-            const outroConfig = enableOutro ? {
-                videoUrl: document.getElementById('outroVideoUrl').value,
-                startTime: parseFloat(document.getElementById('outroStartTime').value),
-                endTime: parseFloat(document.getElementById('outroEndTime').value)
+                endTime: parseFloat(document.getElementById('introEndTime').value),
+                fadeOut: parseFloat(document.getElementById('introFadeOut').value) || 0.3
             } : null;
 
             // Build payload for JSON2VIDEO
@@ -1793,68 +1770,76 @@
                 // Add intro scene if enabled (only for first clip)
                 if (index === 0 && introConfig && introConfig.videoUrl) {
                     scenes.push({
+                        comment: "Intro Scene (Scene 0)",
                         elements: [{
                             type: "video",
                             src: introConfig.videoUrl,
                             seek: introConfig.startTime,
                             duration: introConfig.endTime - introConfig.startTime,
-                            resize: "cover"
-                        }]
+                            fade_out: introConfig.fadeOut,
+                            muted: false
+                        }],
+                        "background-color": "#000000"
                     });
                 }
 
-                // Add main clip scene
-                scenes.push({
-                    background: {
+                // Calculate main video duration (auto-calculated: clip duration - seek offset)
+                const mainVideoDuration = clip.duration - (config.mainVideo.seek || 0);
+
+                // Build main scene elements array
+                const mainSceneElements = [
+                    // Main video element
+                    {
                         type: "video",
-                        src: `{{${editorData.b_roll_type}_video_url}}`,
+                        src: clip.url,
+                        muted: config.mainVideo.mute,
+                        seek: config.mainVideo.seek || 0,
+                        duration: mainVideoDuration,
+                        width: config.mainVideo.width,
+                        height: config.mainVideo.height,
+                        x: config.mainVideo.x,
+                        y: config.mainVideo.y,
+                        volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
+                    },
+                    // B-roll video element (per-clip)
+                    {
+                        type: "video",
+                        src: `{{${config.background.bRollType}_video_url}}`,
                         width: config.background.width,
                         height: config.background.height,
                         x: config.background.x,
                         y: config.background.y,
-                        "z-index": config.background.zIndex
-                    },
-                    layers: [
-                        {
-                            type: "video",
-                            src: clip.url,
-                            width: config.mainVideo.width,
-                            height: config.mainVideo.height,
-                            x: config.mainVideo.x,
-                            y: config.mainVideo.y,
-                            "z-index": config.mainVideo.zIndex,
-                            seek: config.mainVideo.startTime,
-                            duration: config.mainVideo.endTime - config.mainVideo.startTime || -1,
-                            volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
-                        }
-                    ],
-                    subtitles: {
-                        fontFamily: config.subtitles.fontFamily,
-                        maxWordsPerLine: config.subtitles.maxWordsPerLine || 1,
-                        fontSize: config.subtitles.fontSize,
-                        fontWeight: config.subtitles.fontWeight,
-                        textAlign: config.subtitles.alignment,
-                        x: config.subtitles.x,
-                        y: config.subtitles.y,
-                        color: config.subtitles.textColor,
-                        outlineColor: config.subtitles.outlineColor,
-                        outlineWidth: config.subtitles.outlineWidth,
-                        backgroundColor: config.subtitles.backgroundColor,
-                        "z-index": config.subtitles.zIndex,
-                        style: config.subtitles.style || "classic"
+                        duration: mainVideoDuration
                     }
+                ];
+
+                // Add main scene
+                scenes.push({
+                    comment: "Main Scene (Scene 1)",
+                    elements: mainSceneElements,
+                    "background-color": "#ffffff"
                 });
 
-                // Add outro scene if enabled (only for last clip)
-                if (index === editorData.selected_clips.length - 1 && outroConfig && outroConfig.videoUrl) {
-                    scenes.push({
-                        elements: [{
-                            type: "video",
-                            src: outroConfig.videoUrl,
-                            seek: outroConfig.startTime,
-                            duration: outroConfig.endTime - outroConfig.startTime,
-                            resize: "cover"
-                        }]
+                // Build root-level elements array (for subtitles)
+                const rootElements = [];
+
+                // Add subtitles if enabled for this clip
+                if (config.subtitles.enabled) {
+                    rootElements.push({
+                        type: "subtitles",
+                        language: "en",
+                        settings: {
+                            style: config.subtitles.style || "classic",
+                            "font-family": config.subtitles.fontFamily,
+                            "max-words-per-line": config.subtitles.maxWordsPerLine || 1,
+                            "font-size": config.subtitles.fontSize,
+                            position: "custom",
+                            x: config.subtitles.x,
+                            y: config.subtitles.y,
+                            "outline-width": config.subtitles.outlineWidth,
+                            color: config.subtitles.textColor,
+                            "outline-color": config.subtitles.outlineColor
+                        }
                     });
                 }
 
@@ -1866,9 +1851,10 @@
                     end_time: clip.end_time,
                     reason: clip.reason,
                     json2video_config: {
-                        resolution: "portrait",
-                        quality: "high",
-                        scenes: scenes
+                        width: 1080,
+                        height: 1920,
+                        scenes: scenes,
+                        elements: rootElements
                     }
                 };
             });
@@ -1876,11 +1862,12 @@
             const payload = {
                 job_id: editorData.job_id,
                 action: "create_final_videos",
-                b_roll_type: editorData.b_roll_type,
                 intro_enabled: enableIntro,
-                outro_enabled: enableOutro,
                 clips: clips
             };
+
+            // Log the payload for debugging
+            console.log('JSON2VIDEO Payload:', JSON.stringify(payload, null, 2));
 
             try {
                 const response = await fetch(WEBHOOK_URL, {
