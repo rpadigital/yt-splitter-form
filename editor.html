@@ -1301,7 +1301,8 @@
                 clipConfigurations.push({
                     mainVideo: { ...DEFAULTS.mainVideo },
                     background: { ...DEFAULTS.background },
-                    subtitles: { ...DEFAULTS.subtitles }
+                    subtitles: { ...DEFAULTS.subtitles },
+                    intro: { ...DEFAULTS.intro }
                 });
             });
 
@@ -1777,6 +1778,13 @@
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
+
+            // Ensure all clip configurations have intro property (backwards compatibility)
+            clipConfigurations.forEach(config => {
+                if (!config.intro) {
+                    config.intro = { ...DEFAULTS.intro };
+                }
+            });
 
             // Build payload for JSON2VIDEO
             const clips = editorData.selected_clips.map((clip, index) => {
