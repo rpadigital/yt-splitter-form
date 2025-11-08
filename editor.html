@@ -661,7 +661,7 @@
                          alt="Background"
                          crossorigin="anonymous">
                     <video id="videoPreview" class="preview-video-layer"
-                           loop autoplay muted playsinline crossorigin="anonymous">
+                           autoplay muted playsinline crossorigin="anonymous">
                     </video>
                     <!-- Visual Indicators Overlay -->
                     <div class="canvas-overlay" id="canvasOverlay"></div>
@@ -1448,6 +1448,17 @@
 
             videoPreview.onloadeddata = function() {
                 console.log('Video loaded successfully');
+            };
+
+            // Remove old loop handler if exists (cleanup)
+            videoPreview.onended = null;
+
+            // Setup manual looping (more efficient than loop attribute)
+            videoPreview.onended = function() {
+                this.currentTime = 0;
+                this.play().catch(e => {
+                    console.log('Video loop restart prevented:', e);
+                });
             };
 
             videoPreview.src = clip.url;
