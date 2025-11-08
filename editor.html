@@ -1042,6 +1042,14 @@
             }
         };
 
+        // Intro video options with R2 URLs
+        const INTRO_OPTIONS = {
+            holy_shit_jamie_pull_that_video_up: {
+                name: "Holy Shit Jamie Pull That Video Up",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/holy_shit_jamie_pull_that_video_up.mp4"
+            }
+        };
+
         // Default positioning values
         const DEFAULTS = {
             mainVideo: {
@@ -1091,6 +1099,8 @@
         let currentClipIndex = 0;
         let clipConfigurations = [];
         let dragState = null;
+        let isPlayingIntro = false;  // Track if intro is currently playing
+        let introPlaybackTimer = null;  // Timer for intro playback
 
         // Update scale and canvas size based on container
         function updateScale() {
@@ -1122,6 +1132,36 @@
             const enableIntro = document.getElementById('enableIntro').checked;
             document.getElementById('introControls').style.display = enableIntro ? 'block' : 'none';
             updateTimeline();
+
+            // Reload video preview to apply intro changes
+            reloadVideoPreview();
+        }
+
+        // Reload video preview with current intro settings
+        function reloadVideoPreview() {
+            const config = clipConfigurations[currentClipIndex];
+            const clip = editorData.selected_clips[currentClipIndex];
+
+            // Clear any existing intro timer
+            if (introPlaybackTimer) {
+                clearTimeout(introPlaybackTimer);
+                introPlaybackTimer = null;
+            }
+
+            // Save current intro settings first
+            if (config.intro) {
+                config.intro.enabled = document.getElementById('enableIntro').checked;
+                config.intro.videoType = document.getElementById('introVideoSelect').value;
+                config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
+                config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
+            }
+
+            // Reload with updated settings
+            if (config.intro && config.intro.enabled && config.intro.videoType) {
+                playIntroThenMain(config, clip);
+            } else {
+                playMainVideo(clip);
+            }
         }
 
         // Toggle subtitle controls visibility
@@ -1347,11 +1387,22 @@
             const subTextColor = document.getElementById('subTextColor');
             if (subTextColor) subTextColor.addEventListener('input', updateLegend);
 
-            // Setup event listeners for timeline updates
+            // Setup event listeners for timeline and intro preview updates
             ['introStartTime', 'introEndTime', 'introFadeOut'].forEach(id => {
                 const elem = document.getElementById(id);
-                if (elem) elem.addEventListener('input', updateTimeline);
+                if (elem) {
+                    elem.addEventListener('input', () => {
+                        updateTimeline();
+                        reloadVideoPreview();
+                    });
+                }
             });
+
+            // Setup event listener for intro video select
+            const introVideoSelect = document.getElementById('introVideoSelect');
+            if (introVideoSelect) {
+                introVideoSelect.addEventListener('change', reloadVideoPreview);
+            }
 
             // Setup event listeners for subtitle preview updates
             ['subFontFamily', 'subFontSize', 'subFontWeight', 'subStyle', 'subTextColor', 'subOutlineColor', 'subOutlineWidth'].forEach(id => {
@@ -1439,29 +1490,86 @@
             // Update volume displays
             updateVolumeDisplays();
 
-            // Load video preview
+            // Clear any existing intro timer
+            if (introPlaybackTimer) {
+                clearTimeout(introPlaybackTimer);
+                introPlaybackTimer = null;
+            }
+
+            // Load video preview (with intro support)
             const videoPreview = document.getElementById('videoPreview');
-            console.log('Loading video from URL:', clip.url);
 
             videoPreview.onerror = function() {
-                console.error('Failed to load video from:', clip.url);
-                alert(`Failed to load video: ${clip.url}\n\nPlease check:\n1. Video file exists\n2. URL is accessible\n3. CORS is configured on server`);
+                console.error('Failed to load video from:', this.src);
+                alert(`Failed to load video: ${this.src}\n\nPlease check:\n1. Video file exists\n2. URL is accessible\n3. CORS is configured on server`);
             };
 
             videoPreview.onloadeddata = function() {
-                console.log('Video loaded successfully');
+                console.log('Video loaded successfully:', this.src);
             };
 
-            videoPreview.src = clip.url;
-            videoPreview.volume = 1.0; // Set volume to 100%
-            videoPreview.load();
-            videoPreview.play().catch(e => {
-                console.log('Video autoplay prevented:', e);
-            });
+            // Check if intro is enabled for this clip
+            if (config.intro && config.intro.enabled && config.intro.videoType) {
+                // Play intro first
+                playIntroThenMain(config, clip);
+            } else {
+                // No intro - play main video directly
+                playMainVideo(clip);
+            }
 
             updateCanvas();
             updateLegend();
             updateSubtitlePreview();
+        }
+
+        // Play intro video, then transition to main video
+        function playIntroThenMain(config, clip) {
+            const videoPreview = document.getElementById('videoPreview');
+            const introOption = INTRO_OPTIONS[config.intro.videoType];
+
+            if (!introOption) {
+                console.warn('Intro type not found:', config.intro.videoType);
+                playMainVideo(clip);
+                return;
+            }
+
+            isPlayingIntro = true;
+            const introDuration = (config.intro.endTime - config.intro.startTime) * 1000; // Convert to ms
+
+            console.log('Playing intro:', introOption.name);
+
+            // Load intro video
+            videoPreview.loop = false;  // Don't loop intro
+            videoPreview.src = introOption.url;
+            videoPreview.currentTime = config.intro.startTime;
+            videoPreview.volume = 1.0;
+            videoPreview.muted = false;
+            videoPreview.load();
+            videoPreview.play().catch(e => {
+                console.log('Intro autoplay prevented:', e);
+            });
+
+            // After intro duration, switch to main video
+            introPlaybackTimer = setTimeout(() => {
+                console.log('Intro finished, switching to main video');
+                isPlayingIntro = false;
+                playMainVideo(clip);
+            }, introDuration);
+        }
+
+        // Play main video
+        function playMainVideo(clip) {
+            const videoPreview = document.getElementById('videoPreview');
+
+            console.log('Loading main video from URL:', clip.url);
+
+            videoPreview.loop = true;  // Loop main video
+            videoPreview.src = clip.url;
+            videoPreview.volume = 1.0;
+            videoPreview.load();
+            videoPreview.play().catch(e => {
+                console.log('Video autoplay prevented:', e);
+            });
         }
 
         // Save current clip configuration
