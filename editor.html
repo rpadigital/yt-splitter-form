@@ -770,18 +770,44 @@
                                     <option value="holy_shit_jamie_pull_that_video_up">Holy Shit Jamie Pull That Video Up</option>
                                 </select>
                             </div>
-                            <div class="input-grid">
-                                <div class="input-group">
-                                    <label class="input-label">Start Time (s)</label>
-                                    <input type="number" class="input-field" id="introStartTime" value="0" step="0.1" min="0">
+
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Position & Size</div>
+                                <div class="input-grid">
+                                    <div class="input-group">
+                                        <label class="input-label">X Position</label>
+                                        <input type="number" class="input-field" id="introX" value="0">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Y Position</label>
+                                        <input type="number" class="input-field" id="introY" value="0">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Width</label>
+                                        <input type="number" class="input-field" id="introWidth" value="1080">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Height</label>
+                                        <input type="number" class="input-field" id="introHeight" value="1920">
+                                    </div>
                                 </div>
-                                <div class="input-group">
-                                    <label class="input-label">End Time (s)</label>
-                                    <input type="number" class="input-field" id="introEndTime" value="2" step="0.1" min="0">
-                                </div>
-                                <div class="input-group">
-                                    <label class="input-label">Fade Out Duration (s)</label>
-                                    <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
+                            </div>
+
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Timing</div>
+                                <div class="input-grid">
+                                    <div class="input-group">
+                                        <label class="input-label">Start Time (s)</label>
+                                        <input type="number" class="input-field" id="introStartTime" value="0" step="0.1" min="0">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">End Time (s)</label>
+                                        <input type="number" class="input-field" id="introEndTime" value="2" step="0.1" min="0">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Fade Out Duration (s)</label>
+                                        <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1089,6 +1115,10 @@
             intro: {
                 enabled: false,  // Enable intro per clip
                 videoType: "holy_shit_jamie_pull_that_video_up",
+                x: 0,
+                y: 0,
+                width: 1080,
+                height: 1920,
                 startTime: 0,
                 endTime: 2,
                 fadeOut: 0.3
@@ -1152,6 +1182,10 @@
             if (config.intro) {
                 config.intro.enabled = document.getElementById('enableIntro').checked;
                 config.intro.videoType = document.getElementById('introVideoSelect').value;
+                config.intro.x = parseInt(document.getElementById('introX').value) || 0;
+                config.intro.y = parseInt(document.getElementById('introY').value) || 0;
+                config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
+                config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
                 config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
                 config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
             }
@@ -1483,6 +1517,10 @@
             document.getElementById('enableIntro').checked = config.intro.enabled || false;
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
             document.getElementById('introVideoSelect').value = config.intro.videoType || 'holy_shit_jamie_pull_that_video_up';
+            document.getElementById('introX').value = config.intro.x || 0;
+            document.getElementById('introY').value = config.intro.y || 0;
+            document.getElementById('introWidth').value = config.intro.width || 1080;
+            document.getElementById('introHeight').value = config.intro.height || 1920;
             document.getElementById('introStartTime').value = config.intro.startTime || 0;
             document.getElementById('introEndTime').value = config.intro.endTime || 2;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
@@ -1616,6 +1654,10 @@
             }
             config.intro.enabled = document.getElementById('enableIntro').checked;
             config.intro.videoType = document.getElementById('introVideoSelect').value;
+            config.intro.x = parseInt(document.getElementById('introX').value) || 0;
+            config.intro.y = parseInt(document.getElementById('introY').value) || 0;
+            config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
+            config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
             config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
@@ -1910,6 +1952,10 @@
                         elements: [{
                             type: "video",
                             src: `{{${config.intro.videoType}_intro_url}}`,
+                            x: config.intro.x,
+                            y: config.intro.y,
+                            width: config.intro.width,
+                            height: config.intro.height,
                             seek: config.intro.startTime,
                             duration: config.intro.endTime - config.intro.startTime,
                             fade_out: config.intro.fadeOut,
