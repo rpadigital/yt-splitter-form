@@ -661,7 +661,7 @@
                          alt="Background"
                          crossorigin="anonymous">
                     <video id="videoPreview" class="preview-video-layer"
-                           playsinline crossorigin="anonymous" preload="metadata" controls>
+                           loop autoplay muted playsinline crossorigin="anonymous">
                     </video>
                     <!-- Visual Indicators Overlay -->
                     <div class="canvas-overlay" id="canvasOverlay"></div>
@@ -720,8 +720,7 @@
                 </div>
 
                 <div class="help-text">
-                    Drag rectangles on canvas or use controls to adjust positioning<br>
-                    <strong style="color: #667eea;">💡 Click ▶ on the video preview to watch with audio</strong>
+                    Drag rectangles on canvas or use controls to adjust positioning
                 </div>
             </div>
 
@@ -1453,8 +1452,9 @@
             videoPreview.src = clip.url;
             videoPreview.volume = 1.0; // Set volume to 100%
             videoPreview.load();
-            // Video no longer autoplays to save network egress
-            // User can click play button to preview
+            videoPreview.play().catch(e => {
+                console.log('Video autoplay prevented:', e);
+            });
 
             updateCanvas();
             updateLegend();
