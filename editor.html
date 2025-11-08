@@ -1422,7 +1422,10 @@
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
             document.getElementById('subStyle').value = config.subtitles.style || "classic";
 
-            // Update intro fields
+            // Update intro fields (with safety check for backwards compatibility)
+            if (!config.intro) {
+                config.intro = { ...DEFAULTS.intro };
+            }
             document.getElementById('enableIntro').checked = config.intro.enabled || false;
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
             document.getElementById('introVideoUrl').value = config.intro.videoUrl || '';
@@ -1497,7 +1500,10 @@
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
             config.subtitles.style = document.getElementById('subStyle').value;
 
-            // Save intro config
+            // Save intro config (with safety check for backwards compatibility)
+            if (!config.intro) {
+                config.intro = { ...DEFAULTS.intro };
+            }
             config.intro.enabled = document.getElementById('enableIntro').checked;
             config.intro.videoUrl = document.getElementById('introVideoUrl').value;
             config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
