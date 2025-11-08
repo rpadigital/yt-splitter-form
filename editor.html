@@ -661,7 +661,7 @@
                          alt="Background"
                          crossorigin="anonymous">
                     <video id="videoPreview" class="preview-video-layer"
-                           loop playsinline crossorigin="anonymous">
+                           playsinline crossorigin="anonymous" preload="metadata" controls>
                     </video>
                     <!-- Visual Indicators Overlay -->
                     <div class="canvas-overlay" id="canvasOverlay"></div>
@@ -1452,10 +1452,8 @@
             videoPreview.src = clip.url;
             videoPreview.volume = 1.0; // Set volume to 100%
             videoPreview.load();
-            videoPreview.play().catch(e => {
-                console.log('Video autoplay prevented:', e);
-                // Don't alert on autoplay prevention, just log it
-            });
+            // Video no longer autoplays to save network egress
+            // User can click play button to preview
 
             updateCanvas();
             updateLegend();
