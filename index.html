@@ -189,6 +189,13 @@
             border-radius: 8px;
             margin-bottom: 12px;
             border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .timestamp-clip.previewing {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: #f0f4ff;
         }
 
         .timestamp-clip-header {
@@ -202,6 +209,45 @@
             font-weight: 600;
             color: #667eea;
             font-size: 14px;
+        }
+
+        .timestamp-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .timestamp-preview-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .timestamp-preview-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .timestamp-preview-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timestamp-preview-btn.playing {
+            background: #e74c3c;
+        }
+
+        .timestamp-preview-btn.playing:hover {
+            background: #c0392b;
         }
 
         .timestamp-remove-btn {
@@ -556,6 +602,14 @@
         const MAX_CLIPS = 10;
         const API_BASE_URL = 'https://video-splitter-api-production.up.railway.app';
 
+        // YouTube player state management
+        let youtubePlayer = null;
+        let playerReady = false;
+        let currentVideoId = null;
+        let currentVideoUrl = '';
+        let currentPreviewInterval = null;
+        let currentPreviewButton = null;
+
         // Generate unique job ID
         function generateJobId() {
             const now = new Date();
@@ -582,7 +636,7 @@
             return null;
         }
 
-        // Show/hide YouTube preview
+        // Show/hide YouTube preview (with API support)
         function updateVideoPreview() {
             const url = videoUrlInput.value.trim();
             const videoId = extractYouTubeID(url);
@@ -591,15 +645,52 @@
             if (videoId) {
                 videoPreviewSection.style.display = 'block';
                 mainContent.classList.add('with-video');
-                videoPreviewContainer.innerHTML = `
-                    <iframe
-                        src="https://www.youtube.com/embed/${videoId}"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                    ></iframe>
-                `;
+
+                // Only recreate player if video ID changed
+                if (currentVideoId !== videoId) {
+                    // Destroy old player
+                    if (youtubePlayer) {
+                        youtubePlayer.destroy();
+                        youtubePlayer = null;
+                        playerReady = false;
+                    }
+
+                    currentVideoId = videoId;
+
+                    // Create player container
+                    videoPreviewContainer.innerHTML = `<div id="youtube-player"></div>`;
+
+                    // Create new YouTube player
+                    youtubePlayer = new YT.Player('youtube-player', {
+                        videoId: videoId,
+                        width: '100%',
+                        height: '100%',
+                        playerVars: {
+                            'enablejsapi': 1,
+                            'origin': window.location.origin,
+                            'modestbranding': 1,
+                            'rel': 0
+                        },
+                        events: {
+                            'onReady': function() {
+                                playerReady = true;
+                                console.log('YouTube player ready');
+                            },
+                            'onError': function(event) {
+                                console.error('YouTube player error:', event.data);
+                                playerReady = false;
+                            }
+                        }
+                    });
+                }
             } else {
+                // Clear player
+                if (youtubePlayer) {
+                    youtubePlayer.destroy();
+                    youtubePlayer = null;
+                }
+                playerReady = false;
+                currentVideoId = null;
                 videoPreviewSection.style.display = 'none';
                 mainContent.classList.remove('with-video');
                 videoPreviewContainer.innerHTML = `
@@ -609,6 +700,158 @@
                 `;
             }
         }
+
+        // Parse timestamp string to seconds
+        function parseTimestamp(timeStr) {
+            if (!timeStr) return null;
+            const parts = timeStr.trim().split(':').map(Number);
+
+            // Validate all parts are numbers
+            if (parts.some(isNaN)) return null;
+
+            if (parts.length === 2) {
+                // MM:SS format
+                return parts[0] * 60 + parts[1];
+            } else if (parts.length === 3) {
+                // HH:MM:SS format
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            }
+            return null;
+        }
+
+        // Format seconds to MM:SS or HH:MM:SS
+        function formatSeconds(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+
+            if (hours > 0) {
+                return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+            return `${minutes}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Validate timestamp range
+        function validateTimestamps(startStr, endStr, videoDuration) {
+            const startSec = parseTimestamp(startStr);
+            const endSec = parseTimestamp(endStr);
+
+            if (!startSec && startSec !== 0) return "Invalid start time format";
+            if (!endSec && endSec !== 0) return "Invalid end time format";
+            if (startSec >= endSec) return "Start time must be before end time";
+            if (videoDuration && endSec > videoDuration) {
+                return `End time (${endStr}) exceeds video duration (${formatSeconds(videoDuration)})`;
+            }
+            return null; // Valid
+        }
+
+        // Stop current preview
+        function stopCurrentPreview() {
+            if (currentPreviewInterval) {
+                clearInterval(currentPreviewInterval);
+                currentPreviewInterval = null;
+            }
+            if (currentPreviewButton) {
+                currentPreviewButton.classList.remove('playing');
+                currentPreviewButton.textContent = '▶ Preview';
+                currentPreviewButton.disabled = false;
+                currentPreviewButton = null;
+            }
+            // Remove preview highlighting from clip
+            const previewingClip = document.querySelector('.timestamp-clip.previewing');
+            if (previewingClip) {
+                previewingClip.classList.remove('previewing');
+            }
+        }
+
+        // Play clip preview
+        window.playClipPreview = function(clipIndex) {
+            if (!playerReady || !youtubePlayer) {
+                alert('Video player not ready yet. Please wait a moment and try again.');
+                return;
+            }
+
+            // Get the clip container
+            const clip = document.querySelector(`.timestamp-clip[data-clip-index="${clipIndex}"]`);
+            if (!clip) return;
+
+            const startInput = clip.querySelector('input[name^="clip"][name$="_start"]');
+            const endInput = clip.querySelector('input[name^="clip"][name$="_end"]');
+            const previewBtn = clip.querySelector('.timestamp-preview-btn');
+
+            // If already playing this clip, stop it
+            if (previewBtn && previewBtn.classList.contains('playing')) {
+                stopCurrentPreview();
+                if (youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
+                    youtubePlayer.pauseVideo();
+                }
+                return;
+            }
+
+            const startStr = startInput.value.trim();
+            const endStr = endInput.value.trim();
+
+            // Parse timestamps
+            const startSec = parseTimestamp(startStr);
+            const endSec = parseTimestamp(endStr);
+
+            // Validate timestamps
+            let videoDuration;
+            try {
+                videoDuration = youtubePlayer.getDuration();
+            } catch (e) {
+                videoDuration = null;
+            }
+
+            const validationError = validateTimestamps(startStr, endStr, videoDuration);
+            if (validationError) {
+                alert(validationError);
+                return;
+            }
+
+            // Stop any current preview
+            stopCurrentPreview();
+
+            // Set up new preview
+            currentPreviewButton = previewBtn;
+            previewBtn.classList.add('playing');
+            previewBtn.textContent = '⏸ Stop';
+            clip.classList.add('previewing');
+
+            // Mobile: Scroll video into view
+            if (window.innerWidth <= 968) {
+                videoPreviewSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => startPreview(), 600);
+            } else {
+                startPreview();
+            }
+
+            function startPreview() {
+                try {
+                    // Seek to start and play
+                    youtubePlayer.seekTo(startSec, true);
+                    youtubePlayer.playVideo();
+
+                    // Monitor for clip end
+                    currentPreviewInterval = setInterval(() => {
+                        try {
+                            const currentTime = youtubePlayer.getCurrentTime();
+                            if (currentTime >= endSec) {
+                                youtubePlayer.pauseVideo();
+                                stopCurrentPreview();
+                            }
+                        } catch (e) {
+                            console.error('Preview interval error:', e);
+                            stopCurrentPreview();
+                        }
+                    }, 200); // Check every 200ms
+                } catch (e) {
+                    console.error('Preview start error:', e);
+                    alert('Error starting preview. Please try again.');
+                    stopCurrentPreview();
+                }
+            }
+        };
 
         // Show/hide AI option based on stream type
         function updateCaptionModeOptions() {
@@ -637,7 +880,12 @@
             clipDiv.innerHTML = `
                 <div class="timestamp-clip-header">
                     <span class="timestamp-clip-title">Clip ${clipCount}</span>
-                    <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                    <div class="timestamp-actions">
+                        <button type="button" class="timestamp-preview-btn" onclick="playClipPreview(${clipCount})" data-clip-index="${clipCount}">
+                            ▶ Preview
+                        </button>
+                        <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                    </div>
                 </div>
                 <div class="timestamp-row">
                     <div class="timestamp-input-group">
@@ -681,6 +929,12 @@
                     inputs[0].name = `clip${newIndex}_start`;
                     inputs[1].name = `clip${newIndex}_end`;
 
+                    const previewBtn = clip.querySelector('.timestamp-preview-btn');
+                    if (previewBtn) {
+                        previewBtn.setAttribute('onclick', `playClipPreview(${newIndex})`);
+                        previewBtn.setAttribute('data-clip-index', newIndex);
+                    }
+
                     const removeBtn = clip.querySelector('.timestamp-remove-btn');
                     removeBtn.setAttribute('onclick', `removeTimestampClip(${newIndex})`);
                 });
@@ -703,7 +957,12 @@
                 clipDiv.innerHTML = `
                     <div class="timestamp-clip-header">
                         <span class="timestamp-clip-title">Clip ${clipCount}</span>
-                        <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                        <div class="timestamp-actions">
+                            <button type="button" class="timestamp-preview-btn" onclick="playClipPreview(${clipCount})" data-clip-index="${clipCount}">
+                                ▶ Preview
+                            </button>
+                            <button type="button" class="timestamp-remove-btn" onclick="removeTimestampClip(${clipCount})">−</button>
+                        </div>
                     </div>
                     <div class="timestamp-row">
                         <div class="timestamp-input-group">
@@ -754,11 +1013,31 @@
         // Event listeners
         videoUrlInput.addEventListener('input', () => {
             const url = videoUrlInput.value.trim();
-            if (url && !extractYouTubeID(url)) {
+            const newVideoId = extractYouTubeID(url);
+
+            // Protect against URL changes when timestamps exist
+            if (clipCount > 0 && newVideoId !== currentVideoId && currentVideoUrl) {
+                if (!confirm('Changing the URL will clear your timestamps. Continue?')) {
+                    videoUrlInput.value = currentVideoUrl; // Restore previous URL
+                    return;
+                }
+                // Clear timestamps
+                timestampClipsContainer.innerHTML = '';
+                clipCount = 0;
+                addTimestampBtn.disabled = false;
+                addTimestampBtn.textContent = '+ Add Another Clip';
+            }
+
+            // Update current URL
+            currentVideoUrl = url;
+
+            // Validation
+            if (url && !newVideoId) {
                 urlError.style.display = 'block';
             } else {
                 urlError.style.display = 'none';
             }
+
             updateVideoPreview();
         });
 
@@ -925,6 +1204,9 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Stop any preview in progress
+            stopCurrentPreview();
+
             // Reset error states
             urlError.style.display = 'none';
 
@@ -1006,6 +1288,16 @@
 
         // Initialize
         updateCaptionModeOptions();
+    </script>
+
+    <!-- YouTube Iframe API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // YouTube Iframe API ready callback
+        function onYouTubeIframeAPIReady() {
+            console.log('YouTube Iframe API loaded');
+            // Player will be created when user enters URL
+        }
     </script>
 </body>
 </html>
