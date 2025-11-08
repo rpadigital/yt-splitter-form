@@ -1075,6 +1075,13 @@
                 alignment: "center",
                 zIndex: 2,
                 style: "classic"
+            },
+            intro: {
+                enabled: false,  // Enable intro per clip
+                videoUrl: "",
+                startTime: 0,
+                endTime: 2,
+                fadeOut: 0.3
             }
         };
 
@@ -1415,6 +1422,14 @@
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
             document.getElementById('subStyle').value = config.subtitles.style || "classic";
 
+            // Update intro fields
+            document.getElementById('enableIntro').checked = config.intro.enabled || false;
+            document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
+            document.getElementById('introVideoUrl').value = config.intro.videoUrl || '';
+            document.getElementById('introStartTime').value = config.intro.startTime || 0;
+            document.getElementById('introEndTime').value = config.intro.endTime || 2;
+            document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
+
             // Update volume displays
             updateVolumeDisplays();
 
@@ -1481,6 +1496,13 @@
             config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
             config.subtitles.style = document.getElementById('subStyle').value;
+
+            // Save intro config
+            config.intro.enabled = document.getElementById('enableIntro').checked;
+            config.intro.videoUrl = document.getElementById('introVideoUrl').value;
+            config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
+            config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
+            config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
         }
 
         // Navigation
@@ -1751,15 +1773,6 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
 
-            // Get intro configuration
-            const enableIntro = document.getElementById('enableIntro').checked;
-            const introConfig = enableIntro ? {
-                videoUrl: document.getElementById('introVideoUrl').value,
-                startTime: parseFloat(document.getElementById('introStartTime').value),
-                endTime: parseFloat(document.getElementById('introEndTime').value),
-                fadeOut: parseFloat(document.getElementById('introFadeOut').value) || 0.3
-            } : null;
-
             // Build payload for JSON2VIDEO
             const clips = editorData.selected_clips.map((clip, index) => {
                 const config = clipConfigurations[index];
@@ -1767,16 +1780,16 @@
                 // Build scenes array
                 const scenes = [];
 
-                // Add intro scene if enabled (only for first clip)
-                if (index === 0 && introConfig && introConfig.videoUrl) {
+                // Add intro scene if enabled for this clip
+                if (config.intro.enabled && config.intro.videoUrl) {
                     scenes.push({
                         comment: "Intro Scene (Scene 0)",
                         elements: [{
                             type: "video",
-                            src: introConfig.videoUrl,
-                            seek: introConfig.startTime,
-                            duration: introConfig.endTime - introConfig.startTime,
-                            fade_out: introConfig.fadeOut,
+                            src: config.intro.videoUrl,
+                            seek: config.intro.startTime,
+                            duration: config.intro.endTime - config.intro.startTime,
+                            fade_out: config.intro.fadeOut,
                             muted: false
                         }],
                         "background-color": "#000000"
@@ -1850,6 +1863,7 @@
                     start_time: clip.start_time,
                     end_time: clip.end_time,
                     reason: clip.reason,
+                    intro_enabled: config.intro.enabled,  // Per-clip intro flag
                     json2video_config: {
                         width: 1080,
                         height: 1920,
@@ -1862,7 +1876,6 @@
             const payload = {
                 job_id: editorData.job_id,
                 action: "create_final_videos",
-                intro_enabled: enableIntro,
                 clips: clips
             };
 
