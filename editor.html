@@ -765,8 +765,10 @@
                         </label>
                         <div id="introControls" style="display: none;">
                             <div class="input-group" style="margin-bottom: 10px;">
-                                <label class="input-label">Intro Video URL</label>
-                                <input type="text" class="input-field" id="introVideoUrl" placeholder="https://example.com/intro.mp4">
+                                <label class="input-label">Intro Video</label>
+                                <select class="input-field" id="introVideoSelect">
+                                    <option value="holy_shit_jamie_pull_that_video_up">Holy Shit Jamie Pull That Video Up</option>
+                                </select>
                             </div>
                             <div class="input-grid">
                                 <div class="input-group">
@@ -1078,7 +1080,7 @@
             },
             intro: {
                 enabled: false,  // Enable intro per clip
-                videoUrl: "",
+                videoType: "holy_shit_jamie_pull_that_video_up",
                 startTime: 0,
                 endTime: 2,
                 fadeOut: 0.3
@@ -1429,7 +1431,7 @@
             }
             document.getElementById('enableIntro').checked = config.intro.enabled || false;
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
-            document.getElementById('introVideoUrl').value = config.intro.videoUrl || '';
+            document.getElementById('introVideoSelect').value = config.intro.videoType || 'holy_shit_jamie_pull_that_video_up';
             document.getElementById('introStartTime').value = config.intro.startTime || 0;
             document.getElementById('introEndTime').value = config.intro.endTime || 2;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
@@ -1505,7 +1507,7 @@
                 config.intro = { ...DEFAULTS.intro };
             }
             config.intro.enabled = document.getElementById('enableIntro').checked;
-            config.intro.videoUrl = document.getElementById('introVideoUrl').value;
+            config.intro.videoType = document.getElementById('introVideoSelect').value;
             config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
             config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
@@ -1794,12 +1796,12 @@
                 const scenes = [];
 
                 // Add intro scene if enabled for this clip
-                if (config.intro.enabled && config.intro.videoUrl) {
+                if (config.intro.enabled && config.intro.videoType) {
                     scenes.push({
                         comment: "Intro Scene (Scene 0)",
                         elements: [{
                             type: "video",
-                            src: config.intro.videoUrl,
+                            src: `{{${config.intro.videoType}_intro_url}}`,
                             seek: config.intro.startTime,
                             duration: config.intro.endTime - config.intro.startTime,
                             fade_out: config.intro.fadeOut,
