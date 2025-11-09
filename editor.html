@@ -773,6 +773,7 @@
                                 <label class="input-label">Intro Video</label>
                                 <select class="input-field" id="introVideoSelect">
                                     <option value="holy_shit_jamie_pull_that_video_up">Holy Shit Jamie Pull That Video Up</option>
+                                    <option value="behold_the_athiests_nightmare">Behold The Athiests Nightmare</option>
                                 </select>
                             </div>
 
@@ -1082,6 +1083,10 @@
             holy_shit_jamie_pull_that_video_up: {
                 name: "Holy Shit Jamie Pull That Video Up",
                 url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/holy_shit_jamie_pull_that_video_up.mp4"
+            },
+            behold_the_athiests_nightmare: {
+                name: "Behold The Athiests Nightmare",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/behold_the_athiests_nightmare.mp4"
             }
         };
 
@@ -1171,6 +1176,7 @@
         // Toggle pause/play for preview video
         function togglePausePlay() {
             const videoPreview = document.getElementById('videoPreview');
+            const bgPreview = document.getElementById('bgPreview');
             const pausePlayBtn = document.getElementById('pausePlayBtn');
 
             if (isPaused) {
@@ -1178,11 +1184,29 @@
                 videoPreview.play().catch(e => {
                     console.log('Video play prevented:', e);
                 });
+
+                // Resume background animation (restore original src)
+                const currentSrc = bgPreview.src;
+                bgPreview.src = '';
+                bgPreview.src = currentSrc;
+                bgPreview.style.opacity = '1';  // Restore full opacity
+
                 pausePlayBtn.innerHTML = '⏸️ Pause';
                 isPaused = false;
             } else {
                 // Pause playback
                 videoPreview.pause();
+
+                // Pause background GIF by setting src to a static frame
+                // (GIFs don't have native pause, so we freeze it by replacing src)
+                bgPreview.style.opacity = '0.5';  // Visual indicator it's paused
+
+                // Also pause intro timer if playing intro
+                if (introPlaybackTimer) {
+                    clearTimeout(introPlaybackTimer);
+                    introPlaybackTimer = null;
+                }
+
                 pausePlayBtn.innerHTML = '▶️ Play';
                 isPaused = true;
             }
@@ -1889,10 +1913,11 @@
                 const y = (e.clientY - rect.top) / SCALE;
 
                 // Check which layer was clicked (reverse order for top layer first)
-                const mainX = parseInt(document.getElementById('mainX').value);
-                const mainY = parseInt(document.getElementById('mainY').value);
-                const mainWidth = parseInt(document.getElementById('mainWidth').value);
-                const mainHeight = parseInt(document.getElementById('mainHeight').value);
+                // If intro is playing, use intro dimensions; otherwise use main video dimensions
+                const videoX = isPlayingIntro ? parseInt(document.getElementById('introX').value) : parseInt(document.getElementById('mainX').value);
+                const videoY = isPlayingIntro ? parseInt(document.getElementById('introY').value) : parseInt(document.getElementById('mainY').value);
+                const videoWidth = isPlayingIntro ? parseInt(document.getElementById('introWidth').value) : parseInt(document.getElementById('mainWidth').value);
+                const videoHeight = isPlayingIntro ? parseInt(document.getElementById('introHeight').value) : parseInt(document.getElementById('mainHeight').value);
 
                 const bgX = parseInt(document.getElementById('bgX').value);
                 const bgY = parseInt(document.getElementById('bgY').value);
@@ -1904,11 +1929,11 @@
                 const subWidth = 400;
                 const subHeight = 100;
 
-                // Check main video layer
-                if (x >= mainX && x <= mainX + mainWidth && y >= mainY && y <= mainY + mainHeight) {
+                // Check video layer (intro or main depending on what's playing)
+                if (x >= videoX && x <= videoX + videoWidth && y >= videoY && y <= videoY + videoHeight) {
                     isDragging = true;
-                    dragTarget = 'main';
-                    dragOffset = { x: x - mainX, y: y - mainY };
+                    dragTarget = isPlayingIntro ? 'intro' : 'main';
+                    dragOffset = { x: x - videoX, y: y - videoY };
                 }
                 // Check subtitle area
                 else if (x >= subX - subWidth/2 && x <= subX + subWidth/2 &&
@@ -1935,6 +1960,9 @@
                 if (dragTarget === 'main') {
                     document.getElementById('mainX').value = Math.round(x - dragOffset.x);
                     document.getElementById('mainY').value = Math.round(y - dragOffset.y);
+                } else if (dragTarget === 'intro') {
+                    document.getElementById('introX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('introY').value = Math.round(y - dragOffset.y);
                 } else if (dragTarget === 'background') {
                     document.getElementById('bgX').value = Math.round(x - dragOffset.x);
                     document.getElementById('bgY').value = Math.round(y - dragOffset.y);
