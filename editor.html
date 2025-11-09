@@ -1317,6 +1317,38 @@
             }
         };
 
+        // B-roll clip database with durations for intelligent selection
+        const BROLL_CLIPS = {
+            minecraft: [
+                {duration: 181, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/engaging_001%20(1).mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_000.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_001.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_002.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_003.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_004.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_005.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_006.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_007.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/clip_008.mp4"}
+            ],
+            temple_run: [
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/templerun1.mp4"}
+            ],
+            steep: [
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/engaging_001.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/engaging_003.mp4"},
+                {duration: 120, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/engaging_004.mp4"},
+                {duration: 120, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/engaging_005.mp4"}
+            ],
+            trackmania: [
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/trackmania1.mp4"},
+                {duration: 60, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/trackmania2.mp4"},
+                {duration: 120, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/trackmania3.mp4"},
+                {duration: 120, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/trackmania4.mp4"},
+                {duration: 120, url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/trackmania5.mp4"}
+            ]
+        };
+
         // Default positioning values
         const DEFAULTS = {
             mainVideo: {
@@ -1482,6 +1514,22 @@
 
             // Refresh canvas
             updateCanvas();
+        }
+
+        // Select appropriate b-roll clip based on duration
+        function selectBrollClip(brollType, clipDuration) {
+            const clips = BROLL_CLIPS[brollType];
+            if (!clips || clips.length === 0) return null;
+
+            // Filter clips that can cover the duration
+            const suitableClips = clips.filter(clip => clip.duration >= clipDuration);
+
+            // If no clips long enough, use the longest available
+            const availableClips = suitableClips.length > 0 ? suitableClips : [clips[clips.length - 1]];
+
+            // Randomly select from suitable clips
+            const randomIndex = Math.floor(Math.random() * availableClips.length);
+            return availableClips[randomIndex].url;
         }
 
         // Toggle pause/play for preview video
@@ -2694,6 +2742,147 @@
                                       config.intro.soundEffect !== "none";
                 const hasAudio = hasMainVideoAudio || hasBackgroundMusic || hasSoundEffect;
 
+                // Build JSON2Video V2 API-ready payload
+                const apiScenes = [];
+
+                // Add intro scene if enabled
+                if (config.intro.enabled && config.intro.videoType) {
+                    const introOption = INTRO_OPTIONS[config.intro.videoType];
+                    const apiIntroElements = [{
+                        type: "video",
+                        src: introOption.url,
+                        x: config.intro.x,
+                        y: config.intro.y,
+                        width: config.intro.width,
+                        height: config.intro.height,
+                        "z-index": config.intro.zIndex,
+                        "fade-in": 0.3,
+                        "fade-out": config.intro.fadeOut,
+                        muted: false
+                    }];
+
+                    // Add sound effect if selected
+                    const soundEffectType = config.intro.soundEffect || 'none';
+                    if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
+                        const soundEffect = SOUND_EFFECTS[soundEffectType];
+                        const introDuration = config.intro.detectedDuration || 3.1;
+                        const soundEffectStartTime = introDuration - soundEffect.duration;
+
+                        apiIntroElements.push({
+                            type: "audio",
+                            src: soundEffect.url,
+                            start: soundEffectStartTime,
+                            duration: soundEffect.duration,
+                            volume: 1
+                        });
+                    }
+
+                    apiScenes.push({
+                        comment: "Intro Scene",
+                        "background-color": "#000000",
+                        elements: apiIntroElements
+                    });
+                }
+
+                // Build main scene elements with API enhancements
+                const apiMainSceneElements = [{
+                    type: "video",
+                    src: clip.url,
+                    muted: config.mainVideo.mute,
+                    seek: config.mainVideo.seek || 0,
+                    duration: mainVideoDuration,
+                    width: config.mainVideo.width,
+                    height: config.mainVideo.height,
+                    x: config.mainVideo.x,
+                    y: config.mainVideo.y,
+                    volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
+                    "z-index": config.mainVideo.zIndex,
+                    "fade-in": 0.5,
+                    "fade-out": 0.5
+                }];
+
+                // Add b-roll if enabled - use intelligent clip selection
+                if (config.background.enabled) {
+                    const selectedBrollUrl = selectBrollClip(config.background.bRollType, mainVideoDuration);
+
+                    if (selectedBrollUrl) {
+                        apiMainSceneElements.push({
+                            type: "video",
+                            src: selectedBrollUrl,
+                            width: config.background.width,
+                            height: config.background.height,
+                            x: config.background.x,
+                            y: config.background.y,
+                            duration: mainVideoDuration,
+                            "z-index": config.background.zIndex,
+                            muted: true
+                        });
+                    }
+                }
+
+                apiScenes.push({
+                    comment: "Main Scene",
+                    "background-color": "#ffffff",
+                    elements: apiMainSceneElements
+                });
+
+                // Build global elements array for API
+                const apiElements = [];
+
+                // Add background music if selected
+                if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
+                    const musicTrack = BACKGROUND_MUSIC[backgroundMusicType];
+
+                    apiElements.push({
+                        type: "audio",
+                        src: musicTrack.url,
+                        duration: -2,  // Match movie duration
+                        volume: config.mainVideo.musicVolume || 0.5,
+                        loop: -1,  // Infinite loop
+                        "fade-in": 2,
+                        "fade-out": 3,
+                        "z-index": -1
+                    });
+                }
+
+                // Add subtitles if enabled
+                if (config.subtitles.enabled) {
+                    apiElements.push({
+                        type: "subtitles",
+                        language: "en",
+                        settings: {
+                            style: config.subtitles.style || "classic",
+                            "font-family": config.subtitles.fontFamily,
+                            "max-words-per-line": config.subtitles.maxWordsPerLine || 1,
+                            "font-size": config.subtitles.fontSize,
+                            position: "custom",
+                            x: config.subtitles.x,
+                            y: config.subtitles.y,
+                            "outline-width": config.subtitles.outlineWidth,
+                            color: config.subtitles.wordColor,
+                            "outline-color": config.subtitles.outlineColor,
+                            "word-color": config.subtitles.wordColor,
+                            "line-color": config.subtitles.lineColor,
+                            "shadow-color": config.subtitles.shadowColor,
+                            "shadow-offset": 3
+                        }
+                    });
+                }
+
+                // Create complete API payload
+                const json2video_api_payload = {
+                    width: 1080,
+                    height: 1920,
+                    quality: "high",
+                    scenes: apiScenes,
+                    elements: apiElements,
+                    exports: [{
+                        destinations: [{
+                            id: "make-webhook"
+                        }]
+                    }]
+                };
+
                 return {
                     clip_url: clip.url,
                     clip_filename: clip.filename,
@@ -2708,7 +2897,8 @@
                         height: 1920,
                         scenes: scenes,
                         elements: rootElements
-                    }
+                    },
+                    json2video_api_payload: json2video_api_payload  // NEW: Complete API-ready payload
                 };
             });
 
