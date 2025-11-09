@@ -807,17 +807,12 @@
                                 <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Timing</div>
                                 <div class="input-grid">
                                     <div class="input-group">
-                                        <label class="input-label">Start Time (s)</label>
-                                        <input type="number" class="input-field" id="introStartTime" value="0" step="0.1" min="0">
-                                    </div>
-                                    <div class="input-group">
-                                        <label class="input-label">End Time (s)</label>
-                                        <input type="number" class="input-field" id="introEndTime" value="2" step="0.1" min="0">
-                                    </div>
-                                    <div class="input-group">
                                         <label class="input-label">Fade Out Duration (s)</label>
                                         <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
                                     </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
+                                    Intro will play for its full duration
                                 </div>
                             </div>
                         </div>
@@ -1082,11 +1077,13 @@
         const INTRO_OPTIONS = {
             holy_shit_jamie_pull_that_video_up: {
                 name: "Holy Shit Jamie Pull That Video Up",
-                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/holy_shit_jamie_pull_that_video_up.mp4"
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/holy_shit_jamie_pull_that_video_up.mp4",
+                duration: null  // Will be detected dynamically
             },
             behold_the_athiests_nightmare: {
                 name: "Behold The Athiests Nightmare",
-                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/behold_the_athiests_nightmare.mp4"
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/behold_the_athiests_nightmare.mp4",
+                duration: null  // Will be detected dynamically
             }
         };
 
@@ -1134,8 +1131,6 @@
                 width: 1080,
                 height: 1920,
                 zIndex: 0,
-                startTime: 0,
-                endTime: 2,
                 fadeOut: 0.3
             }
         };
@@ -1185,21 +1180,11 @@
                     console.log('Video play prevented:', e);
                 });
 
-                // Resume background animation (restore original src)
-                const currentSrc = bgPreview.src;
-                bgPreview.src = '';
-                bgPreview.src = currentSrc;
-                bgPreview.style.opacity = '1';  // Restore full opacity
-
                 pausePlayBtn.innerHTML = '⏸️ Pause';
                 isPaused = false;
             } else {
                 // Pause playback
                 videoPreview.pause();
-
-                // Pause background GIF by setting src to a static frame
-                // (GIFs don't have native pause, so we freeze it by replacing src)
-                bgPreview.style.opacity = '0.5';  // Visual indicator it's paused
 
                 // Also pause intro timer if playing intro
                 if (introPlaybackTimer) {
@@ -1242,8 +1227,7 @@
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
                 config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
                 config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
-                config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
-                config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
+                config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
             }
 
             // Reload with updated settings
@@ -1338,13 +1322,9 @@
             const clipsSegment = document.getElementById('timelineClips');
 
             if (enableIntro) {
-                const introStart = parseFloat(document.getElementById('introStartTime').value) || 0;
-                const introEnd = parseFloat(document.getElementById('introEndTime').value) || 2;
-                const introDuration = introEnd - introStart;
-
                 introSegment.classList.remove('disabled');
-                introSegment.style.flex = introDuration / 10; // Scale for visual proportion
-                introSegment.textContent = `Intro (${introDuration.toFixed(1)}s)`;
+                introSegment.style.flex = 1; // Fixed proportion for intro
+                introSegment.textContent = 'Intro (full duration)';
             } else {
                 introSegment.classList.add('disabled');
                 introSegment.style.flex = 0;
@@ -1478,21 +1458,24 @@
             if (subTextColor) subTextColor.addEventListener('input', updateLegend);
 
             // Setup event listeners for timeline and intro preview updates
-            ['introStartTime', 'introEndTime', 'introFadeOut'].forEach(id => {
-                const elem = document.getElementById(id);
-                if (elem) {
-                    elem.addEventListener('input', () => {
-                        updateTimeline();
-                        reloadVideoPreview();
-                    });
-                }
-            });
+            const introFadeOutElem = document.getElementById('introFadeOut');
+            if (introFadeOutElem) {
+                introFadeOutElem.addEventListener('input', updateTimeline);
+            }
 
             // Setup event listener for intro video select
             const introVideoSelect = document.getElementById('introVideoSelect');
             if (introVideoSelect) {
                 introVideoSelect.addEventListener('change', reloadVideoPreview);
             }
+
+            // Setup event listeners for intro position/size updates
+            ['introX', 'introY', 'introWidth', 'introHeight', 'introZIndex'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) {
+                    elem.addEventListener('input', updateCanvas);
+                }
+            });
 
             // Setup event listeners for subtitle preview updates
             ['subFontFamily', 'subFontSize', 'subFontWeight', 'subStyle', 'subTextColor', 'subOutlineColor', 'subOutlineWidth'].forEach(id => {
@@ -1578,8 +1561,6 @@
             document.getElementById('introWidth').value = config.intro.width || 1080;
             document.getElementById('introHeight').value = config.intro.height || 1920;
             document.getElementById('introZIndex').value = config.intro.zIndex || 0;
-            document.getElementById('introStartTime').value = config.intro.startTime || 0;
-            document.getElementById('introEndTime').value = config.intro.endTime || 2;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
 
             // Update volume displays
@@ -1629,27 +1610,40 @@
             }
 
             isPlayingIntro = true;
-            const introDuration = (config.intro.endTime - config.intro.startTime) * 1000; // Convert to ms
+            updateCanvas();  // Update visual positioning to use intro values
 
             console.log('Playing intro:', introOption.name);
 
             // Load intro video
             videoPreview.loop = false;  // Don't loop intro
             videoPreview.src = introOption.url;
-            videoPreview.currentTime = config.intro.startTime;
+            videoPreview.currentTime = 0;
             videoPreview.volume = 1.0;
             videoPreview.muted = false;
-            videoPreview.load();
-            videoPreview.play().catch(e => {
-                console.log('Intro autoplay prevented:', e);
-            });
 
-            // After intro duration, switch to main video
-            introPlaybackTimer = setTimeout(() => {
-                console.log('Intro finished, switching to main video');
-                isPlayingIntro = false;
-                playMainVideo(clip);
-            }, introDuration);
+            // Wait for video metadata to load to get duration
+            const onMetadataLoaded = () => {
+                const introDuration = videoPreview.duration * 1000; // Convert to ms
+                console.log('Intro duration detected:', videoPreview.duration, 'seconds');
+
+                videoPreview.play().catch(e => {
+                    console.log('Intro autoplay prevented:', e);
+                });
+
+                // After intro duration, switch to main video
+                introPlaybackTimer = setTimeout(() => {
+                    console.log('Intro finished, switching to main video');
+                    isPlayingIntro = false;
+                    updateCanvas();  // Update visual positioning to use main video values
+                    playMainVideo(clip);
+                }, introDuration);
+
+                // Remove event listener
+                videoPreview.removeEventListener('loadedmetadata', onMetadataLoaded);
+            };
+
+            videoPreview.addEventListener('loadedmetadata', onMetadataLoaded);
+            videoPreview.load();
         }
 
         // Play main video
@@ -1716,8 +1710,6 @@
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
-            config.intro.startTime = parseFloat(document.getElementById('introStartTime').value) || 0;
-            config.intro.endTime = parseFloat(document.getElementById('introEndTime').value) || 2;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
         }
 
@@ -1789,17 +1781,36 @@
             bgPreview.style.height = (bgHeight * SCALE) + 'px';
             bgPreview.style.zIndex = bgZIndex;
 
-            // Position video preview
+            // Position video preview - use intro values if playing intro
             const videoPreview = document.getElementById('videoPreview');
-            videoPreview.style.left = (mainX * SCALE) + 'px';
-            videoPreview.style.top = (mainY * SCALE) + 'px';
-            videoPreview.style.width = (mainWidth * SCALE) + 'px';
-            videoPreview.style.height = (mainHeight * SCALE) + 'px';
-            videoPreview.style.zIndex = mainZIndex;
-            // Mute if checkbox is checked OR if volume is 0
-            videoPreview.muted = mainMute || mainVolume === 0;
-            // Set volume (only matters when not muted)
-            videoPreview.volume = mainVolume;
+
+            if (isPlayingIntro) {
+                // Use intro positioning
+                const introX = parseInt(document.getElementById('introX').value);
+                const introY = parseInt(document.getElementById('introY').value);
+                const introWidth = parseInt(document.getElementById('introWidth').value);
+                const introHeight = parseInt(document.getElementById('introHeight').value);
+                const introZIndex = parseInt(document.getElementById('introZIndex').value) || 0;
+
+                videoPreview.style.left = (introX * SCALE) + 'px';
+                videoPreview.style.top = (introY * SCALE) + 'px';
+                videoPreview.style.width = (introWidth * SCALE) + 'px';
+                videoPreview.style.height = (introHeight * SCALE) + 'px';
+                videoPreview.style.zIndex = introZIndex;
+                videoPreview.muted = false;
+                videoPreview.volume = 1.0;
+            } else {
+                // Use main video positioning
+                videoPreview.style.left = (mainX * SCALE) + 'px';
+                videoPreview.style.top = (mainY * SCALE) + 'px';
+                videoPreview.style.width = (mainWidth * SCALE) + 'px';
+                videoPreview.style.height = (mainHeight * SCALE) + 'px';
+                videoPreview.style.zIndex = mainZIndex;
+                // Mute if checkbox is checked OR if volume is 0
+                videoPreview.muted = mainMute || mainVolume === 0;
+                // Set volume (only matters when not muted)
+                videoPreview.volume = mainVolume;
+            }
 
             // Update canvas z-index (for subtitles overlay)
             canvas.style.zIndex = subZIndex;
@@ -2019,8 +2030,6 @@
                             width: config.intro.width,
                             height: config.intro.height,
                             "z-index": config.intro.zIndex,
-                            seek: config.intro.startTime,
-                            duration: config.intro.endTime - config.intro.startTime,
                             fade_out: config.intro.fadeOut,
                             muted: false
                         }],
