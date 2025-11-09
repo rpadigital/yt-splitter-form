@@ -523,7 +523,7 @@
         }
 
         .subtitle-preview-container {
-            background: #000;
+            background: #ffffff;
             border-radius: 8px;
             padding: 40px 20px;
             min-height: 120px;
@@ -1064,11 +1064,27 @@
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Outline Width</label>
-                                <input type="number" class="input-field" id="subOutlineWidth" value="10" min="0" max="20">
+                                <input type="number" class="input-field" id="subOutlineWidth" value="5" min="0" max="20">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Background Color</label>
                                 <input type="color" class="input-field" id="subBackgroundColor" value="#000000" style="height: 40px;">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Word Color</label>
+                                <input type="color" class="input-field" id="subWordColor" value="#FFFF00" style="height: 40px;" data-tooltip="Color for currently spoken/highlighted word">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Line Color</label>
+                                <input type="color" class="input-field" id="subLineColor" value="#FFFFFF" style="height: 40px;" data-tooltip="Color for non-highlighted words">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Shadow Color</label>
+                                <input type="color" class="input-field" id="subShadowColor" value="#000000" style="height: 40px;" data-tooltip="Shadow color under subtitle text">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Preview BG Color</label>
+                                <input type="color" class="input-field" id="subPreviewBgColor" value="#FFFFFF" style="height: 40px;" data-tooltip="Background color for preview box (visual only, not sent to API)">
                             </div>
                         </div>
                     </div>
@@ -1160,14 +1176,18 @@
                 fontSize: 125,
                 x: 540,
                 y: 1000,
-                outlineWidth: 10,
+                outlineWidth: 5,
                 textColor: "#FFFFFF",
                 outlineColor: "#000000",
                 backgroundColor: "#000000",
                 fontWeight: "bold",
                 alignment: "center",
                 zIndex: 2,
-                style: "classic"
+                style: "classic",
+                wordColor: "#FFFF00",  // Yellow for highlighted word
+                lineColor: "#FFFFFF",  // White for non-highlighted words
+                shadowColor: "#000000",  // Black shadow
+                previewBackgroundColor: "#FFFFFF"  // White preview background (not sent to API)
             },
             intro: {
                 enabled: false,  // Enable intro per clip
@@ -1645,7 +1665,7 @@
             });
 
             // Setup event listeners for subtitle preview updates
-            ['subFontFamily', 'subFontSize', 'subFontWeight', 'subStyle', 'subTextColor', 'subOutlineColor', 'subOutlineWidth'].forEach(id => {
+            ['subFontFamily', 'subFontSize', 'subFontWeight', 'subStyle', 'subTextColor', 'subOutlineColor', 'subOutlineWidth', 'subWordColor', 'subLineColor', 'subShadowColor', 'subPreviewBgColor'].forEach(id => {
                 const elem = document.getElementById(id);
                 if (elem) {
                     elem.addEventListener('input', updateSubtitlePreview);
@@ -1735,6 +1755,10 @@
             document.getElementById('subOutlineWidth').value = config.subtitles.outlineWidth;
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
             document.getElementById('subStyle').value = config.subtitles.style || "classic";
+            document.getElementById('subWordColor').value = config.subtitles.wordColor || DEFAULTS.subtitles.wordColor;
+            document.getElementById('subLineColor').value = config.subtitles.lineColor || DEFAULTS.subtitles.lineColor;
+            document.getElementById('subShadowColor').value = config.subtitles.shadowColor || DEFAULTS.subtitles.shadowColor;
+            document.getElementById('subPreviewBgColor').value = config.subtitles.previewBackgroundColor || DEFAULTS.subtitles.previewBackgroundColor;
 
             // Update intro fields (with safety check for backwards compatibility)
             if (!config.intro) {
@@ -1899,6 +1923,10 @@
             config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
             config.subtitles.style = document.getElementById('subStyle').value;
+            config.subtitles.wordColor = document.getElementById('subWordColor').value;
+            config.subtitles.lineColor = document.getElementById('subLineColor').value;
+            config.subtitles.shadowColor = document.getElementById('subShadowColor').value;
+            config.subtitles.previewBackgroundColor = document.getElementById('subPreviewBgColor').value;
 
             // Save intro config (with safety check for backwards compatibility)
             if (!config.intro) {
@@ -2049,6 +2077,13 @@
             const outlineColor = document.getElementById('subOutlineColor').value;
             const outlineWidth = parseInt(document.getElementById('subOutlineWidth').value) || 10;
             const style = document.getElementById('subStyle').value || 'classic';
+            const previewBgColor = document.getElementById('subPreviewBgColor').value;
+
+            // Update preview container background color
+            const previewContainer = previewText.closest('.subtitle-preview-container');
+            if (previewContainer) {
+                previewContainer.style.backgroundColor = previewBgColor;
+            }
 
             // Scale font size for preview (divide by 5 for reasonable display)
             const previewFontSize = fontSize / 5;
@@ -2300,7 +2335,10 @@
                             y: config.subtitles.y,
                             "outline-width": config.subtitles.outlineWidth,
                             color: config.subtitles.textColor,
-                            "outline-color": config.subtitles.outlineColor
+                            "outline-color": config.subtitles.outlineColor,
+                            "word-color": config.subtitles.wordColor,
+                            "line-color": config.subtitles.lineColor,
+                            "shadow-color": config.subtitles.shadowColor
                         }
                     });
                 }
