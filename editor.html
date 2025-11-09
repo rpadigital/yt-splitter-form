@@ -655,9 +655,14 @@
             <div class="canvas-section">
                 <div class="canvas-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>Preview (1080x1920)</span>
-                    <button id="pausePlayBtn" onclick="togglePausePlay()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                        ⏸️ Pause
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="pausePlayBtn" onclick="togglePausePlay()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            ⏸️ Pause
+                        </button>
+                        <button id="restartBtn" onclick="restartPreview()" style="padding: 8px 16px; background: #764ba2; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            🔄 Restart
+                        </button>
+                    </div>
                 </div>
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="810" height="1440"></canvas>
@@ -1204,6 +1209,38 @@
                 pausePlayBtn.innerHTML = '▶️ Play';
                 isPaused = true;
             }
+        }
+
+        // Restart preview from beginning with current settings
+        function restartPreview() {
+            // Clear any existing intro timer
+            if (introPlaybackTimer) {
+                clearTimeout(introPlaybackTimer);
+                introPlaybackTimer = null;
+            }
+
+            // Reset video element
+            const videoPreview = document.getElementById('videoPreview');
+            videoPreview.currentTime = 0;
+            videoPreview.pause();
+
+            // Reset pause/play button state
+            isPaused = false;
+            const pausePlayBtn = document.getElementById('pausePlayBtn');
+            pausePlayBtn.innerHTML = '⏸️ Pause';
+
+            // Get current clip config
+            const config = clipConfigurations[currentClipIndex];
+            const clip = editorData.selected_clips[currentClipIndex];
+
+            // Reload preview with current settings
+            if (config.intro && config.intro.enabled && config.intro.videoType) {
+                playIntroThenMain(config, clip);
+            } else {
+                playMainVideo(clip);
+            }
+
+            console.log('Preview restarted');
         }
 
         // Toggle intro controls visibility
