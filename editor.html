@@ -2686,6 +2686,14 @@
                     });
                 }
 
+                // Determine if this clip has any audio
+                const hasMainVideoAudio = !config.mainVideo.mute && config.mainVideo.volume > 0;
+                const hasBackgroundMusic = backgroundMusicType !== "none";
+                const hasSoundEffect = config.intro.enabled &&
+                                      config.intro.soundEffect &&
+                                      config.intro.soundEffect !== "none";
+                const hasAudio = hasMainVideoAudio || hasBackgroundMusic || hasSoundEffect;
+
                 return {
                     clip_url: clip.url,
                     clip_filename: clip.filename,
@@ -2694,6 +2702,7 @@
                     end_time: clip.end_time,
                     reason: clip.reason,
                     intro_enabled: config.intro.enabled,  // Per-clip intro flag
+                    has_audio: hasAudio,  // Top-level flag indicating if clip contains any audio
                     json2video_config: {
                         width: 1080,
                         height: 1920,
