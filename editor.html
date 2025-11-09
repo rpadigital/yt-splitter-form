@@ -1498,12 +1498,14 @@
                     console.log('Video play prevented:', e);
                 });
 
-                // Resume background music if it has a source
-                if (backgroundMusicPreview.src) {
+                // Resume background music if it has a source and we're not in intro
+                if (backgroundMusicPreview.src && !isPlayingIntro) {
                     backgroundMusicPreview.play().catch(e => {
                         console.log('Music play prevented:', e);
                     });
                 }
+
+                // Note: Sound effects don't need explicit resume - the timeupdate listener handles it automatically
 
                 pausePlayBtn.innerHTML = '⏸️ Pause';
                 isPaused = false;
@@ -1515,7 +1517,9 @@
                 soundEffectPreview.pause();
                 backgroundMusicPreview.pause();
 
-                // Also pause intro timer if playing intro
+                // Note: When pausing during intro, the timer is cleared. This is a known limitation.
+                // To fully support pause/resume during intro, we'd need to track elapsed time and restart
+                // the timer with remaining duration. For now, pause during intro may not transition correctly.
                 if (introPlaybackTimer) {
                     clearTimeout(introPlaybackTimer);
                     introPlaybackTimer = null;
@@ -2082,19 +2086,28 @@
                 const soundEffectPreview = document.getElementById('soundEffectPreview');
                 const soundEffectType = config.intro.soundEffect || 'none';
 
+                let soundEffectTimeUpdateListener = null;
+
                 if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
                     const soundEffect = SOUND_EFFECTS[soundEffectType];
                     soundEffectPreview.src = soundEffect.url;
                     soundEffectPreview.volume = 1.0;
+                    soundEffectPreview.currentTime = 0;
 
-                    // Schedule sound effect to play at the specified start offset (e.g., 2.7s into intro)
-                    const soundEffectDelay = soundEffect.startOffset * 1000; // Convert to ms
-                    setTimeout(() => {
-                        soundEffectPreview.play().catch(e => {
-                            console.log('Sound effect playback prevented:', e);
-                        });
-                        console.log('Playing sound effect:', soundEffect.name);
-                    }, soundEffectDelay);
+                    // Use timeupdate to sync sound effect with video playback (not wall-clock time)
+                    const soundEffectStartTime = soundEffect.startOffset; // in seconds
+
+                    soundEffectTimeUpdateListener = () => {
+                        if (videoPreview.currentTime >= soundEffectStartTime && soundEffectPreview.paused) {
+                            soundEffectPreview.currentTime = 0;
+                            soundEffectPreview.play().catch(e => {
+                                console.log('Sound effect playback prevented:', e);
+                            });
+                            console.log('🎧 Playing sound effect:', soundEffect.name, 'at video time:', videoPreview.currentTime);
+                        }
+                    };
+
+                    videoPreview.addEventListener('timeupdate', soundEffectTimeUpdateListener);
                 }
 
                 // After intro duration, switch to main video
@@ -2102,7 +2115,10 @@
                     console.log('Intro finished, switching to main video');
                     isPlayingIntro = false;
 
-                    // Stop sound effect if still playing
+                    // Clean up sound effect
+                    if (soundEffectTimeUpdateListener) {
+                        videoPreview.removeEventListener('timeupdate', soundEffectTimeUpdateListener);
+                    }
                     soundEffectPreview.pause();
                     soundEffectPreview.currentTime = 0;
 
@@ -2139,14 +2155,28 @@
 
             if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
                 const musicTrack = BACKGROUND_MUSIC[musicType];
+
+                // Stop any currently playing music first
+                backgroundMusicPreview.pause();
+                backgroundMusicPreview.currentTime = 0;
+
+                // Set up the new track
                 backgroundMusicPreview.src = musicTrack.url;
                 backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
                 backgroundMusicPreview.loop = true;
 
-                backgroundMusicPreview.play().catch(e => {
-                    console.log('Background music playback prevented:', e);
-                });
-                console.log('Playing background music:', musicTrack.name, 'at volume:', backgroundMusicPreview.volume);
+                // Wait for audio to be ready before playing (use 'canplay' for faster response than 'canplaythrough')
+                const onMusicReady = () => {
+                    backgroundMusicPreview.play().then(() => {
+                        console.log('🎵 Background music playing:', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
+                    }).catch(e => {
+                        console.warn('Background music autoplay blocked:', e);
+                    });
+                    backgroundMusicPreview.removeEventListener('canplay', onMusicReady);
+                };
+
+                backgroundMusicPreview.addEventListener('canplay', onMusicReady);
+                backgroundMusicPreview.load();
             } else {
                 // Stop any playing music if "none" is selected
                 backgroundMusicPreview.pause();
