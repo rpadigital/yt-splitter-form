@@ -2038,18 +2038,11 @@
 
             // Check if intro is enabled for this clip
             if (config.intro && config.intro.enabled && config.intro.videoType) {
-                // Play intro first (which will transition to sound effect or main video)
+                // Play intro first (will transition to main video)
                 playIntroThenMain(config, clip);
             } else {
-                // No intro - check if sound effect should play before main video
-                const soundEffectType = config.intro?.soundEffect || 'none';
-                if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
-                    // Play sound effect phase before main video
-                    playSoundEffectThenMain(config, clip);
-                } else {
-                    // No intro, no sound effect - play main video directly
-                    playMainVideo(clip);
-                }
+                // No intro - play main video directly
+                playMainVideo(clip);
             }
 
             updateCanvas();
@@ -2083,33 +2076,22 @@
             // Wait for video metadata to load to get duration
             const onMetadataLoaded = () => {
                 const introDuration = videoPreview.duration * 1000; // Convert to ms
-                console.log('Intro duration detected:', videoPreview.duration, 'seconds');
+
+                // Store the detected duration in config for JSON payload calculation
+                config.intro.detectedDuration = videoPreview.duration; // in seconds
+                console.log('Intro duration detected and stored:', videoPreview.duration, 'seconds');
 
                 videoPreview.play().catch(e => {
                     console.log('Intro autoplay prevented:', e);
                 });
 
-                // Pre-load background music during intro (while user gesture context is still valid)
-                // This prevents autoplay blocking when transitioning to main video
-                const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
-                const musicType = config.mainVideo.backgroundMusic || 'none';
-
-                if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
-                    const musicTrack = BACKGROUND_MUSIC[musicType];
-                    backgroundMusicPreview.src = musicTrack.url;
-                    backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
-                    backgroundMusicPreview.loop = true;
-                    backgroundMusicPreview.load(); // Pre-load during intro
-                    console.log('🎵 Pre-loading background music:', musicTrack.name);
-                }
-
-                // After intro duration, switch to sound effect phase (or main video if no sound effect)
+                // After intro duration, switch to main video
                 introPlaybackTimer = setTimeout(() => {
-                    console.log('Intro finished, transitioning to next phase');
+                    console.log('Intro finished, switching to main video');
                     isPlayingIntro = false;
 
                     updateCanvas();  // Update visual positioning to use main video values
-                    playSoundEffectThenMain(config, clip);
+                    playMainVideo(clip);
                 }, introDuration);
 
                 // Remove event listener
@@ -2118,46 +2100,6 @@
 
             videoPreview.addEventListener('loadedmetadata', onMetadataLoaded);
             videoPreview.load();
-        }
-
-        // Play sound effect as standalone phase, then transition to main video
-        function playSoundEffectThenMain(config, clip) {
-            const videoPreview = document.getElementById('videoPreview');
-            const soundEffectPreview = document.getElementById('soundEffectPreview');
-            const soundEffectType = config.intro.soundEffect || 'none';
-
-            if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
-                const soundEffect = SOUND_EFFECTS[soundEffectType];
-
-                console.log('🎧 Playing sound effect phase:', soundEffect.name);
-
-                // Show black screen during sound effect (clear video source)
-                videoPreview.src = '';
-                videoPreview.style.backgroundColor = '#000';
-
-                // Play sound effect
-                soundEffectPreview.src = soundEffect.url;
-                soundEffectPreview.volume = 1.0;
-                soundEffectPreview.currentTime = 0;
-
-                soundEffectPreview.play().then(() => {
-                    console.log('🎧 Sound effect playing:', soundEffect.name, 'duration:', soundEffect.duration + 's');
-                }).catch(e => {
-                    console.log('Sound effect playback prevented:', e);
-                });
-
-                // After sound effect duration, transition to main video
-                const soundEffectDuration = soundEffect.duration * 1000; // Convert to ms
-                setTimeout(() => {
-                    console.log('Sound effect finished, switching to main video');
-                    soundEffectPreview.pause();
-                    soundEffectPreview.currentTime = 0;
-                    playMainVideo(clip);
-                }, soundEffectDuration);
-            } else {
-                // No sound effect selected, go directly to main video
-                playMainVideo(clip);
-            }
         }
 
         // Play main video
@@ -2175,49 +2117,7 @@
                 console.log('Video autoplay prevented:', e);
             });
 
-            // Play background music if selected
-            const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
-            const musicType = config.mainVideo.backgroundMusic || 'none';
-
-            if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
-                const musicTrack = BACKGROUND_MUSIC[musicType];
-
-                // Reset playback position
-                backgroundMusicPreview.currentTime = 0;
-
-                // Check if music was already pre-loaded during intro (readyState >= 2 means HAVE_CURRENT_DATA or better)
-                if (backgroundMusicPreview.readyState >= 2) {
-                    // Music is ready - play immediately
-                    backgroundMusicPreview.play().then(() => {
-                        console.log('🎵 Background music playing (pre-loaded):', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
-                    }).catch(e => {
-                        console.warn('Background music autoplay blocked:', e);
-                    });
-                } else {
-                    // Music not ready yet - this happens when there's no intro or music wasn't pre-loaded
-                    // Set up the track now
-                    backgroundMusicPreview.src = musicTrack.url;
-                    backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
-                    backgroundMusicPreview.loop = true;
-
-                    // Wait for audio to be ready before playing
-                    const onMusicReady = () => {
-                        backgroundMusicPreview.play().then(() => {
-                            console.log('🎵 Background music playing (loaded on-demand):', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
-                        }).catch(e => {
-                            console.warn('Background music autoplay blocked:', e);
-                        });
-                        backgroundMusicPreview.removeEventListener('canplay', onMusicReady);
-                    };
-
-                    backgroundMusicPreview.addEventListener('canplay', onMusicReady);
-                    backgroundMusicPreview.load();
-                }
-            } else {
-                // Stop any playing music if "none" is selected
-                backgroundMusicPreview.pause();
-                backgroundMusicPreview.currentTime = 0;
-            }
+            // Note: Background music is not played in preview, only included in JSON payload
         }
 
         // Save current clip configuration
@@ -2684,10 +2584,16 @@
                     const soundEffectType = config.intro.soundEffect || 'none';
                     if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
                         const soundEffect = SOUND_EFFECTS[soundEffectType];
+
+                        // Calculate when to start the sound effect (at the end of intro)
+                        // Start time = intro duration - sound effect duration
+                        const introDuration = config.intro.detectedDuration || 3.1; // Fallback if not detected
+                        const soundEffectStartTime = introDuration - soundEffect.duration;
+
                         introElements.push({
                             type: "audio",
                             src: soundEffect.url,
-                            start: soundEffect.startOffset,
+                            start: soundEffectStartTime,
                             duration: soundEffect.duration,
                             volume: 1
                         });
