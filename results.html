@@ -1214,10 +1214,15 @@
 
         // Re-generate clips with adjusted timestamps
         async function regenerateClips() {
-            // Collect adjusted timestamps
+            // Collect adjusted timestamps for SELECTED clips only
+            const selectedCheckboxes = document.querySelectorAll('.clip-checkbox:checked');
             const adjustedTimestamps = [];
 
-            allClips.forEach((clip, index) => {
+            selectedCheckboxes.forEach(checkbox => {
+                const index = parseInt(checkbox.dataset.clipIndex);
+                const clip = allClips[index];
+
+                // Only process custom clips (fixed clips don't have adjustable timestamps)
                 if (clip.mode === 'custom') {
                     const adjustment = timestampAdjustments[index];
                     const startSeconds = timestampToSeconds(adjustment.originalStart) + adjustment.startAdjustment;
@@ -1230,6 +1235,12 @@
                     });
                 }
             });
+
+            // Validate that at least one custom clip is selected
+            if (adjustedTimestamps.length === 0) {
+                alert('Please select at least one custom clip to regenerate.');
+                return;
+            }
 
             // Create new job with adjusted timestamps
             const payload = {
