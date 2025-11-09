@@ -808,6 +808,15 @@
                                 </div>
                             </div>
 
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Scale</div>
+                                <div class="input-group">
+                                    <label class="input-label">Zoom (Width & Height)</label>
+                                    <input type="range" class="input-field" id="introScale" min="1.0" max="2.0" step="0.1" value="1.0" style="padding: 0;" data-tooltip="Scale both width and height proportionally" oninput="scaleIntroVideo(this.value)">
+                                    <span id="introScaleValue" style="font-size: 12px; color: #666;">1.0x</span>
+                                </div>
+                            </div>
+
                             <div style="margin-bottom: 10px;">
                                 <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Timing</div>
                                 <div class="input-grid">
@@ -859,6 +868,15 @@
                         <div class="input-group">
                             <label class="input-label">Start video from (seconds)</label>
                             <input type="number" class="input-field" id="mainSeek" value="0" step="0.1" min="0" data-tooltip="Skip the first X seconds of the main clip">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Scale</div>
+                        <div class="input-group">
+                            <label class="input-label">Zoom (Width & Height)</label>
+                            <input type="range" class="input-field" id="mainScale" min="1.0" max="2.0" step="0.1" value="1.0" style="padding: 0;" data-tooltip="Scale both width and height proportionally" oninput="scaleMainVideo(this.value)">
+                            <span id="mainScaleValue" style="font-size: 12px; color: #666;">1.0x</span>
                         </div>
                     </div>
 
@@ -926,6 +944,14 @@
                         <div class="input-group">
                             <label class="input-label">Z-Index</label>
                             <input type="number" class="input-field" id="bgZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Scale</div>
+                        <div class="input-group">
+                            <label class="input-label">Zoom (Width & Height)</label>
+                            <input type="range" class="input-field" id="bgScale" min="1.0" max="2.0" step="0.1" value="1.0" style="padding: 0;" data-tooltip="Scale both width and height proportionally" oninput="scaleBackgroundVideo(this.value)">
+                            <span id="bgScaleValue" style="font-size: 12px; color: #666;">1.0x</span>
                         </div>
                     </div>
                     </div><!-- End backgroundControls -->
@@ -1110,7 +1136,10 @@
                 zIndex: 0,
                 seek: 0,  // Skip first X seconds
                 volume: 1.0,
-                mute: false
+                mute: false,
+                scale: 1.0,
+                baseWidth: 1826,
+                baseHeight: 1045
             },
             background: {
                 enabled: true,  // Enable background by default
@@ -1119,7 +1148,10 @@
                 x: -292,
                 y: 1021,
                 zIndex: 1,
-                bRollType: "minecraft"  // Default B-roll type (per-clip)
+                bRollType: "minecraft",  // Default B-roll type (per-clip)
+                scale: 1.0,
+                baseWidth: 1800,
+                baseHeight: 978
             },
             subtitles: {
                 enabled: true,  // Enable subtitles by default
@@ -1145,7 +1177,10 @@
                 width: 1080,
                 height: 1920,
                 zIndex: 0,
-                fadeOut: 0.3
+                fadeOut: 0.3,
+                scale: 1.0,
+                baseWidth: 1080,
+                baseHeight: 1920
             }
         };
 
@@ -1180,6 +1215,75 @@
                 updateScale();
                 updateCanvas();
             }, 100);
+        }
+
+        // Scale main video (width and height proportionally)
+        function scaleMainVideo(scaleValue) {
+            const config = clipConfigurations[currentClipIndex];
+            const scale = parseFloat(scaleValue);
+
+            // Update scale display
+            document.getElementById('mainScaleValue').textContent = scale.toFixed(1) + 'x';
+
+            // Calculate new width and height based on base values
+            const newWidth = Math.round(config.mainVideo.baseWidth * scale);
+            const newHeight = Math.round(config.mainVideo.baseHeight * scale);
+
+            // Update the input fields
+            document.getElementById('mainWidth').value = newWidth;
+            document.getElementById('mainHeight').value = newHeight;
+
+            // Update the scale in config
+            config.mainVideo.scale = scale;
+
+            // Refresh canvas
+            updateCanvas();
+        }
+
+        // Scale intro video (width and height proportionally)
+        function scaleIntroVideo(scaleValue) {
+            const config = clipConfigurations[currentClipIndex];
+            const scale = parseFloat(scaleValue);
+
+            // Update scale display
+            document.getElementById('introScaleValue').textContent = scale.toFixed(1) + 'x';
+
+            // Calculate new width and height based on base values
+            const newWidth = Math.round(config.intro.baseWidth * scale);
+            const newHeight = Math.round(config.intro.baseHeight * scale);
+
+            // Update the input fields
+            document.getElementById('introWidth').value = newWidth;
+            document.getElementById('introHeight').value = newHeight;
+
+            // Update the scale in config
+            config.intro.scale = scale;
+
+            // Refresh canvas
+            updateCanvas();
+        }
+
+        // Scale background video (width and height proportionally)
+        function scaleBackgroundVideo(scaleValue) {
+            const config = clipConfigurations[currentClipIndex];
+            const scale = parseFloat(scaleValue);
+
+            // Update scale display
+            document.getElementById('bgScaleValue').textContent = scale.toFixed(1) + 'x';
+
+            // Calculate new width and height based on base values
+            const newWidth = Math.round(config.background.baseWidth * scale);
+            const newHeight = Math.round(config.background.baseHeight * scale);
+
+            // Update the input fields
+            document.getElementById('bgWidth').value = newWidth;
+            document.getElementById('bgHeight').value = newHeight;
+
+            // Update the scale in config
+            config.background.scale = scale;
+
+            // Refresh canvas
+            updateCanvas();
         }
 
         // Toggle pause/play for preview video
@@ -1587,6 +1691,11 @@
             document.getElementById('mainVolume').value = config.mainVideo.volume;
             document.getElementById('mainMute').checked = config.mainVideo.mute;
             document.getElementById('mainSeek').value = config.mainVideo.seek || 0;
+            document.getElementById('mainScale').value = config.mainVideo.scale || 1.0;
+            document.getElementById('mainScaleValue').textContent = (config.mainVideo.scale || 1.0).toFixed(1) + 'x';
+            // Ensure base values are set
+            if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
+            if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
 
             // Update background video fields
             document.getElementById('enableBackground').checked = config.background.enabled !== false;  // Default to true if not set
@@ -1596,6 +1705,11 @@
             document.getElementById('bgWidth').value = config.background.width;
             document.getElementById('bgHeight').value = config.background.height;
             document.getElementById('bgZIndex').value = config.background.zIndex;
+            document.getElementById('bgScale').value = config.background.scale || 1.0;
+            document.getElementById('bgScaleValue').textContent = (config.background.scale || 1.0).toFixed(1) + 'x';
+            // Ensure base values are set
+            if (!config.background.baseWidth) config.background.baseWidth = DEFAULTS.background.baseWidth;
+            if (!config.background.baseHeight) config.background.baseHeight = DEFAULTS.background.baseHeight;
 
             // Update background preview visibility
             const bgPreview = document.getElementById('bgPreview');
@@ -1635,6 +1749,11 @@
             document.getElementById('introHeight').value = config.intro.height || 1920;
             document.getElementById('introZIndex').value = config.intro.zIndex || 0;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
+            document.getElementById('introScale').value = config.intro.scale || 1.0;
+            document.getElementById('introScaleValue').textContent = (config.intro.scale || 1.0).toFixed(1) + 'x';
+            // Ensure base values are set
+            if (!config.intro.baseWidth) config.intro.baseWidth = DEFAULTS.intro.baseWidth;
+            if (!config.intro.baseHeight) config.intro.baseHeight = DEFAULTS.intro.baseHeight;
 
             // Update volume displays
             updateVolumeDisplays();
@@ -1747,6 +1866,10 @@
             config.mainVideo.volume = parseFloat(document.getElementById('mainVolume').value);
             config.mainVideo.mute = document.getElementById('mainMute').checked;
             config.mainVideo.seek = parseFloat(document.getElementById('mainSeek').value) || 0;
+            config.mainVideo.scale = parseFloat(document.getElementById('mainScale').value) || 1.0;
+            // Base values don't change once set
+            if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
+            if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
 
             // Save background video config
             config.background.enabled = document.getElementById('enableBackground').checked;
@@ -1756,6 +1879,10 @@
             config.background.height = parseInt(document.getElementById('bgHeight').value);
             config.background.zIndex = parseInt(document.getElementById('bgZIndex').value);
             config.background.bRollType = document.getElementById('bRollSelect').value;
+            config.background.scale = parseFloat(document.getElementById('bgScale').value) || 1.0;
+            // Base values don't change once set
+            if (!config.background.baseWidth) config.background.baseWidth = DEFAULTS.background.baseWidth;
+            if (!config.background.baseHeight) config.background.baseHeight = DEFAULTS.background.baseHeight;
 
             // Save subtitle config
             config.subtitles.enabled = document.getElementById('enableSubtitles').checked;
@@ -1785,6 +1912,10 @@
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
+            config.intro.scale = parseFloat(document.getElementById('introScale').value) || 1.0;
+            // Base values don't change once set
+            if (!config.intro.baseWidth) config.intro.baseWidth = DEFAULTS.intro.baseWidth;
+            if (!config.intro.baseHeight) config.intro.baseHeight = DEFAULTS.intro.baseHeight;
         }
 
         // Navigation
