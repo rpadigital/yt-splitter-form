@@ -885,16 +885,23 @@
                         </div>
                         <button class="reset-btn" onclick="resetLayer('background')">Reset</button>
                     </div>
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label class="input-label">B-Roll Footage</label>
-                        <select class="input-field" id="bRollSelect" onchange="changeBRoll()">
-                            <option value="minecraft">Minecraft</option>
-                            <option value="temple_run">Temple Run</option>
-                            <option value="steep">Steep</option>
-                            <option value="trackmania">Trackmania</option>
-                        </select>
+                    <div style="margin-bottom: 10px;">
+                        <label>
+                            <input type="checkbox" id="enableBackground" checked onchange="toggleBackground()">
+                            <span>Enable background b-roll for this clip</span>
+                        </label>
                     </div>
-                    <div class="input-grid">
+                    <div id="backgroundControls">
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label class="input-label">B-Roll Footage</label>
+                            <select class="input-field" id="bRollSelect" onchange="changeBRoll()">
+                                <option value="minecraft">Minecraft</option>
+                                <option value="temple_run">Temple Run</option>
+                                <option value="steep">Steep</option>
+                                <option value="trackmania">Trackmania</option>
+                            </select>
+                        </div>
+                        <div class="input-grid">
                         <div class="input-group">
                             <label class="input-label">X Position</label>
                             <input type="number" class="input-field" id="bgX" oninput="updateCanvas()">
@@ -916,6 +923,7 @@
                             <input type="number" class="input-field" id="bgZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
                         </div>
                     </div>
+                    </div><!-- End backgroundControls -->
                 </div>
 
                 <!-- Subtitles -->
@@ -1100,6 +1108,7 @@
                 mute: false
             },
             background: {
+                enabled: true,  // Enable background by default
                 width: 1800,
                 height: 978,
                 x: -292,
@@ -1236,6 +1245,23 @@
             } else {
                 playMainVideo(clip);
             }
+        }
+
+        // Toggle background controls visibility
+        function toggleBackground() {
+            const enableBackground = document.getElementById('enableBackground').checked;
+            const bgPreview = document.getElementById('bgPreview');
+
+            document.getElementById('backgroundControls').style.display = enableBackground ? 'block' : 'none';
+
+            // Hide or show the background preview image
+            if (enableBackground) {
+                bgPreview.style.display = 'block';
+            } else {
+                bgPreview.style.display = 'none';
+            }
+
+            updateCanvas();
         }
 
         // Toggle subtitle controls visibility
@@ -1526,11 +1552,21 @@
             document.getElementById('mainSeek').value = config.mainVideo.seek || 0;
 
             // Update background video fields
+            document.getElementById('enableBackground').checked = config.background.enabled !== false;  // Default to true if not set
+            document.getElementById('backgroundControls').style.display = config.background.enabled !== false ? 'block' : 'none';
             document.getElementById('bgX').value = config.background.x;
             document.getElementById('bgY').value = config.background.y;
             document.getElementById('bgWidth').value = config.background.width;
             document.getElementById('bgHeight').value = config.background.height;
             document.getElementById('bgZIndex').value = config.background.zIndex;
+
+            // Update background preview visibility
+            const bgPreview = document.getElementById('bgPreview');
+            if (config.background.enabled !== false) {
+                bgPreview.style.display = 'block';
+            } else {
+                bgPreview.style.display = 'none';
+            }
 
             // Update subtitle fields
             document.getElementById('enableSubtitles').checked = config.subtitles.enabled !== false;  // Default to true if not set
@@ -1676,6 +1712,7 @@
             config.mainVideo.seek = parseFloat(document.getElementById('mainSeek').value) || 0;
 
             // Save background video config
+            config.background.enabled = document.getElementById('enableBackground').checked;
             config.background.x = parseInt(document.getElementById('bgX').value);
             config.background.y = parseInt(document.getElementById('bgY').value);
             config.background.width = parseInt(document.getElementById('bgWidth').value);
@@ -2054,9 +2091,12 @@
                         x: config.mainVideo.x,
                         y: config.mainVideo.y,
                         volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
-                    },
-                    // B-roll video element (per-clip)
-                    {
+                    }
+                ];
+
+                // Add B-roll video element if background is enabled (per-clip)
+                if (config.background.enabled) {
+                    mainSceneElements.push({
                         type: "video",
                         src: `{{${config.background.bRollType}_video_url}}`,
                         width: config.background.width,
@@ -2064,8 +2104,8 @@
                         x: config.background.x,
                         y: config.background.y,
                         duration: mainVideoDuration
-                    }
-                ];
+                    });
+                }
 
                 // Add main scene
                 scenes.push({
