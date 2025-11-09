@@ -723,6 +723,9 @@
                     <video id="videoPreview" class="preview-video-layer"
                            loop autoplay muted playsinline>
                     </video>
+                    <!-- Hidden Audio Elements for Preview -->
+                    <audio id="soundEffectPreview" style="display: none;"></audio>
+                    <audio id="backgroundMusicPreview" style="display: none;" loop></audio>
                     <!-- Visual Indicators Overlay -->
                     <div class="canvas-overlay" id="canvasOverlay"></div>
                 </div>
@@ -843,6 +846,14 @@
                                 </select>
                             </div>
 
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <label class="input-label">Sound Effect (Optional)</label>
+                                <select class="input-field" id="introSoundEffectSelect">
+                                    <option value="none">None</option>
+                                    <option value="finger_snap_reverb">Finger Snap Reverb</option>
+                                </select>
+                            </div>
+
                             <div style="margin-bottom: 15px;">
                                 <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Position & Size</div>
                                 <div class="input-grid">
@@ -955,6 +966,24 @@
                                     <input type="checkbox" id="mainMute" style="width: 18px; height: 18px;" data-tooltip="Mute main video audio">
                                     <span style="margin-left: 8px; font-size: 14px;">Mute audio</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Background Music (Optional)</div>
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <label class="input-label">Music Track</label>
+                                <select class="input-field" id="mainBackgroundMusicSelect">
+                                    <option value="none">None</option>
+                                    <option value="echo_sax">Echo Sax</option>
+                                    <option value="two_lanes_silence">TWO LANES - Silence</option>
+                                    <option value="runaway_westworld">Runaway (Westworld Piano)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Music Volume</label>
+                                <input type="range" class="input-field" id="mainMusicVolume" min="0" max="1" step="0.1" value="0.5" style="padding: 0;" data-tooltip="Adjust background music volume (0-100%)">
+                                <span id="mainMusicVolumeValue" style="font-size: 12px; color: #666;">50%</span>
                             </div>
                         </div>
                     </div>
@@ -1254,6 +1283,40 @@
             }
         };
 
+        // Sound effect options for intro clips
+        const SOUND_EFFECTS = {
+            none: {
+                name: "None",
+                url: null
+            },
+            finger_snap_reverb: {
+                name: "Finger Snap Reverb",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/sound%20effects/Finger%20Snap%20Reverb.m4a",
+                duration: 0.4,
+                startOffset: 2.7  // Start 2.7s into intro
+            }
+        };
+
+        // Background music options for main video
+        const BACKGROUND_MUSIC = {
+            none: {
+                name: "None",
+                url: null
+            },
+            echo_sax: {
+                name: "Echo Sax",
+                url: "https://pub-c6bc9dfbd89847e2a83d8c17be604ad5.r2.dev/Echo%20Sax%20-%20Edit.m4a"
+            },
+            two_lanes_silence: {
+                name: "TWO LANES - Silence",
+                url: "https://pub-c6bc9dfbd89847e2a83d8c17be604ad5.r2.dev/TWO%20LANES%20-%20Silence.mp3"
+            },
+            runaway_westworld: {
+                name: "Runaway (Westworld Piano)",
+                url: "https://pub-c6bc9dfbd89847e2a83d8c17be604ad5.r2.dev/The%20Blue%20Notes%20%26%20L'Orchestra%20Cinematique%20-%20Runaway%20(from%20Westworld)%20(Piano%20Rendition).mp3"
+            }
+        };
+
         // Default positioning values
         const DEFAULTS = {
             mainVideo: {
@@ -1267,7 +1330,9 @@
                 mute: false,
                 scale: 1.0,
                 baseWidth: 1826,
-                baseHeight: 1045
+                baseHeight: 1045,
+                backgroundMusic: "none",  // Background music selection
+                musicVolume: 0.5  // Music volume (0-1)
             },
             background: {
                 enabled: true,  // Enable background by default
@@ -1304,6 +1369,7 @@
             intro: {
                 enabled: false,  // Enable intro per clip
                 videoType: "holy_shit_jamie_pull_that_video_up",
+                soundEffect: "none",  // Sound effect selection
                 x: 0,
                 y: 0,
                 width: 1080,
@@ -1423,6 +1489,8 @@
             const videoPreview = document.getElementById('videoPreview');
             const bgPreview = document.getElementById('bgPreview');
             const pausePlayBtn = document.getElementById('pausePlayBtn');
+            const soundEffectPreview = document.getElementById('soundEffectPreview');
+            const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
 
             if (isPaused) {
                 // Resume playback
@@ -1430,11 +1498,22 @@
                     console.log('Video play prevented:', e);
                 });
 
+                // Resume background music if it has a source
+                if (backgroundMusicPreview.src) {
+                    backgroundMusicPreview.play().catch(e => {
+                        console.log('Music play prevented:', e);
+                    });
+                }
+
                 pausePlayBtn.innerHTML = '⏸️ Pause';
                 isPaused = false;
             } else {
                 // Pause playback
                 videoPreview.pause();
+
+                // Pause audio elements
+                soundEffectPreview.pause();
+                backgroundMusicPreview.pause();
 
                 // Also pause intro timer if playing intro
                 if (introPlaybackTimer) {
@@ -1459,6 +1538,16 @@
             const videoPreview = document.getElementById('videoPreview');
             videoPreview.currentTime = 0;
             videoPreview.pause();
+
+            // Stop and reset audio elements
+            const soundEffectPreview = document.getElementById('soundEffectPreview');
+            const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
+
+            soundEffectPreview.pause();
+            soundEffectPreview.currentTime = 0;
+
+            backgroundMusicPreview.pause();
+            backgroundMusicPreview.currentTime = 0;
 
             // Reset pause/play button state
             isPaused = false;
@@ -1504,6 +1593,7 @@
             if (config.intro) {
                 config.intro.enabled = document.getElementById('enableIntro').checked;
                 config.intro.videoType = document.getElementById('introVideoSelect').value;
+                config.intro.soundEffect = document.getElementById('introSoundEffectSelect').value;
                 config.intro.x = parseInt(document.getElementById('introX').value) || 0;
                 config.intro.y = parseInt(document.getElementById('introY').value) || 0;
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
@@ -1768,6 +1858,33 @@
                 introVideoSelect.addEventListener('change', reloadVideoPreview);
             }
 
+            // Setup event listener for intro sound effect select
+            const introSoundEffectSelect = document.getElementById('introSoundEffectSelect');
+            if (introSoundEffectSelect) {
+                introSoundEffectSelect.addEventListener('change', reloadVideoPreview);
+            }
+
+            // Setup event listener for background music select
+            const mainBackgroundMusicSelect = document.getElementById('mainBackgroundMusicSelect');
+            if (mainBackgroundMusicSelect) {
+                mainBackgroundMusicSelect.addEventListener('change', reloadVideoPreview);
+            }
+
+            // Setup event listener for music volume slider
+            const mainMusicVolume = document.getElementById('mainMusicVolume');
+            if (mainMusicVolume) {
+                mainMusicVolume.addEventListener('input', (e) => {
+                    const volumeValue = parseFloat(e.target.value);
+                    document.getElementById('mainMusicVolumeValue').textContent = Math.round(volumeValue * 100) + '%';
+
+                    // Update music volume in real-time if music is playing
+                    const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
+                    if (backgroundMusicPreview.src) {
+                        backgroundMusicPreview.volume = volumeValue;
+                    }
+                });
+            }
+
             // Setup event listeners for intro position/size updates
             ['introX', 'introY', 'introWidth', 'introHeight', 'introZIndex'].forEach(id => {
                 const elem = document.getElementById(id);
@@ -1825,6 +1942,9 @@
             document.getElementById('mainSeek').value = config.mainVideo.seek || 0;
             document.getElementById('mainScale').value = config.mainVideo.scale || 1.0;
             document.getElementById('mainScaleValue').textContent = (config.mainVideo.scale || 1.0).toFixed(1) + 'x';
+            document.getElementById('mainBackgroundMusicSelect').value = config.mainVideo.backgroundMusic || 'none';
+            document.getElementById('mainMusicVolume').value = config.mainVideo.musicVolume || 0.5;
+            document.getElementById('mainMusicVolumeValue').textContent = Math.round((config.mainVideo.musicVolume || 0.5) * 100) + '%';
             // Ensure base values are set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -1878,6 +1998,7 @@
             document.getElementById('enableIntro').checked = config.intro.enabled || false;
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
             document.getElementById('introVideoSelect').value = config.intro.videoType || 'holy_shit_jamie_pull_that_video_up';
+            document.getElementById('introSoundEffectSelect').value = config.intro.soundEffect || 'none';
             document.getElementById('introX').value = config.intro.x || 0;
             document.getElementById('introY').value = config.intro.y || 0;
             document.getElementById('introWidth').value = config.intro.width || 1080;
@@ -1957,10 +2078,34 @@
                     console.log('Intro autoplay prevented:', e);
                 });
 
+                // Schedule sound effect if selected
+                const soundEffectPreview = document.getElementById('soundEffectPreview');
+                const soundEffectType = config.intro.soundEffect || 'none';
+
+                if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
+                    const soundEffect = SOUND_EFFECTS[soundEffectType];
+                    soundEffectPreview.src = soundEffect.url;
+                    soundEffectPreview.volume = 1.0;
+
+                    // Schedule sound effect to play at the specified start offset (e.g., 2.7s into intro)
+                    const soundEffectDelay = soundEffect.startOffset * 1000; // Convert to ms
+                    setTimeout(() => {
+                        soundEffectPreview.play().catch(e => {
+                            console.log('Sound effect playback prevented:', e);
+                        });
+                        console.log('Playing sound effect:', soundEffect.name);
+                    }, soundEffectDelay);
+                }
+
                 // After intro duration, switch to main video
                 introPlaybackTimer = setTimeout(() => {
                     console.log('Intro finished, switching to main video');
                     isPlayingIntro = false;
+
+                    // Stop sound effect if still playing
+                    soundEffectPreview.pause();
+                    soundEffectPreview.currentTime = 0;
+
                     updateCanvas();  // Update visual positioning to use main video values
                     playMainVideo(clip);
                 }, introDuration);
@@ -1976,6 +2121,7 @@
         // Play main video
         function playMainVideo(clip) {
             const videoPreview = document.getElementById('videoPreview');
+            const config = clipConfigurations[currentClipIndex];
 
             console.log('Loading main video from URL:', clip.url);
 
@@ -1986,6 +2132,26 @@
             videoPreview.play().catch(e => {
                 console.log('Video autoplay prevented:', e);
             });
+
+            // Play background music if selected
+            const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
+            const musicType = config.mainVideo.backgroundMusic || 'none';
+
+            if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
+                const musicTrack = BACKGROUND_MUSIC[musicType];
+                backgroundMusicPreview.src = musicTrack.url;
+                backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
+                backgroundMusicPreview.loop = true;
+
+                backgroundMusicPreview.play().catch(e => {
+                    console.log('Background music playback prevented:', e);
+                });
+                console.log('Playing background music:', musicTrack.name, 'at volume:', backgroundMusicPreview.volume);
+            } else {
+                // Stop any playing music if "none" is selected
+                backgroundMusicPreview.pause();
+                backgroundMusicPreview.currentTime = 0;
+            }
         }
 
         // Save current clip configuration
@@ -2002,6 +2168,8 @@
             config.mainVideo.mute = document.getElementById('mainMute').checked;
             config.mainVideo.seek = parseFloat(document.getElementById('mainSeek').value) || 0;
             config.mainVideo.scale = parseFloat(document.getElementById('mainScale').value) || 1.0;
+            config.mainVideo.backgroundMusic = document.getElementById('mainBackgroundMusicSelect').value;
+            config.mainVideo.musicVolume = parseFloat(document.getElementById('mainMusicVolume').value);
             // Base values don't change once set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2044,6 +2212,7 @@
             }
             config.intro.enabled = document.getElementById('enableIntro').checked;
             config.intro.videoType = document.getElementById('introVideoSelect').value;
+            config.intro.soundEffect = document.getElementById('introSoundEffectSelect').value;
             config.intro.x = parseInt(document.getElementById('introX').value) || 0;
             config.intro.y = parseInt(document.getElementById('introY').value) || 0;
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
@@ -2433,19 +2602,34 @@
 
                 // Add intro scene if enabled for this clip
                 if (config.intro.enabled && config.intro.videoType) {
+                    const introElements = [{
+                        type: "video",
+                        src: `{{${config.intro.videoType}_intro_url}}`,
+                        x: config.intro.x,
+                        y: config.intro.y,
+                        width: config.intro.width,
+                        height: config.intro.height,
+                        "z-index": config.intro.zIndex,
+                        fade_out: config.intro.fadeOut,
+                        muted: false
+                    }];
+
+                    // Add sound effect if selected
+                    const soundEffectType = config.intro.soundEffect || 'none';
+                    if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
+                        const soundEffect = SOUND_EFFECTS[soundEffectType];
+                        introElements.push({
+                            type: "audio",
+                            src: soundEffect.url,
+                            start: soundEffect.startOffset,
+                            duration: soundEffect.duration,
+                            volume: 1
+                        });
+                    }
+
                     scenes.push({
                         comment: "Intro Scene (Scene 0)",
-                        elements: [{
-                            type: "video",
-                            src: `{{${config.intro.videoType}_intro_url}}`,
-                            x: config.intro.x,
-                            y: config.intro.y,
-                            width: config.intro.width,
-                            height: config.intro.height,
-                            "z-index": config.intro.zIndex,
-                            fade_out: config.intro.fadeOut,
-                            muted: false
-                        }],
+                        elements: introElements,
                         "background-color": "#000000"
                     });
                 }
@@ -2469,6 +2653,20 @@
                         volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
                     }
                 ];
+
+                const backgroundMusicType = config.mainVideo.backgroundMusic || "none";
+                if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
+                    const musicTrack = BACKGROUND_MUSIC[backgroundMusicType];
+
+                    mainSceneElements.push({
+                        type: "audio",
+                        src: musicTrack.url,
+                        start: 0,  // Starts with main video
+                        duration: mainVideoDuration,
+                        volume: config.mainVideo.musicVolume || 0.5,
+                        loop: true
+                    });
+                }
 
                 // Add B-roll video element if background is enabled (per-clip)
                 if (config.background.enabled) {
