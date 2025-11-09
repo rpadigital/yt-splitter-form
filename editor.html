@@ -628,6 +628,56 @@
         .subtitle-preview-text.style-boxed-word .word:nth-child(6) { animation-delay: 1.0s; }
         .subtitle-preview-text.style-boxed-word .word:nth-child(7) { animation-delay: 1.2s; }
 
+        /* Highlight animation for classic-progressive */
+        .subtitle-preview-text.style-classic-progressive .word {
+            animation: highlightWord 7s infinite;
+        }
+
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(1) { animation-delay: 0s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(2) { animation-delay: 1s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(3) { animation-delay: 2s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(4) { animation-delay: 3s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(5) { animation-delay: 4s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(6) { animation-delay: 5s; }
+        .subtitle-preview-text.style-classic-progressive .word:nth-child(7) { animation-delay: 6s; }
+
+        @keyframes highlightWord {
+            0%, 14% {
+                /* Word is being spoken - will inherit word-color from JS */
+                opacity: 1;
+            }
+            14.29%, 100% {
+                /* Word has been spoken - will inherit line-color from JS */
+                opacity: 1;
+            }
+        }
+
+        /* Highlight cycling for classic-one-word */
+        .subtitle-preview-text.style-classic-one-word .word {
+            animation: cycleHighlight 7s infinite;
+        }
+
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(1) { animation-delay: 0s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(2) { animation-delay: 1s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(3) { animation-delay: 2s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(4) { animation-delay: 3s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(5) { animation-delay: 4s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(6) { animation-delay: 5s; }
+        .subtitle-preview-text.style-classic-one-word .word:nth-child(7) { animation-delay: 6s; }
+
+        @keyframes cycleHighlight {
+            0%, 14% {
+                /* Currently spoken word */
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            14.29%, 100% {
+                /* Not current word */
+                opacity: 0.5;
+                transform: scale(1);
+            }
+        }
+
         @media (max-width: 1200px) {
             .editor-layout {
                 grid-template-columns: 1fr;
@@ -1055,8 +1105,12 @@
                         <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Colors</div>
                         <div class="input-grid">
                             <div class="input-group">
-                                <label class="input-label">Text Color</label>
-                                <input type="color" class="input-field" id="subTextColor" value="#FFFFFF" style="height: 40px;">
+                                <label class="input-label">Spoken Word Color</label>
+                                <input type="color" class="input-field" id="subWordColor" value="#FFFF00" style="height: 40px;" data-tooltip="Color for currently spoken/highlighted word">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Other Words Color</label>
+                                <input type="color" class="input-field" id="subLineColor" value="#FFFFFF" style="height: 40px;" data-tooltip="Color for non-highlighted words">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Outline Color</label>
@@ -1067,20 +1121,12 @@
                                 <input type="number" class="input-field" id="subOutlineWidth" value="5" min="0" max="20">
                             </div>
                             <div class="input-group">
-                                <label class="input-label">Background Color</label>
-                                <input type="color" class="input-field" id="subBackgroundColor" value="#000000" style="height: 40px;">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">Word Color</label>
-                                <input type="color" class="input-field" id="subWordColor" value="#FFFF00" style="height: 40px;" data-tooltip="Color for currently spoken/highlighted word">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">Line Color</label>
-                                <input type="color" class="input-field" id="subLineColor" value="#FFFFFF" style="height: 40px;" data-tooltip="Color for non-highlighted words">
-                            </div>
-                            <div class="input-group">
                                 <label class="input-label">Shadow Color</label>
                                 <input type="color" class="input-field" id="subShadowColor" value="#000000" style="height: 40px;" data-tooltip="Shadow color under subtitle text">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Background Color</label>
+                                <input type="color" class="input-field" id="subBackgroundColor" value="#000000" style="height: 40px;">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Preview BG Color</label>
@@ -1488,7 +1534,7 @@
             const bgZIndex = document.getElementById('bgZIndex')?.value || 1;
 
             const subZIndex = document.getElementById('subZIndex')?.value || 2;
-            const subTextColor = document.getElementById('subTextColor')?.value || '#FFFFFF';
+            const subWordColor = document.getElementById('subWordColor')?.value || '#FFFF00';
 
             document.getElementById('mainLegendDetail').textContent =
                 `Z-Index: ${mainZIndex}, ${mainMute ? 'Muted' : 'Volume: ' + Math.round(mainVolume * 100) + '%'}`;
@@ -1497,7 +1543,7 @@
                 `Z-Index: ${bgZIndex}`;
 
             document.getElementById('subLegendDetail').textContent =
-                `Z-Index: ${subZIndex}, Color: ${subTextColor}`;
+                `Z-Index: ${subZIndex}, Spoken Word: ${subWordColor}`;
 
             updateCanvasIndicators();
         }
@@ -1641,8 +1687,8 @@
                 });
             }
 
-            const subTextColor = document.getElementById('subTextColor');
-            if (subTextColor) subTextColor.addEventListener('input', updateLegend);
+            const subWordColor = document.getElementById('subWordColor');
+            if (subWordColor) subWordColor.addEventListener('input', updateLegend);
 
             // Setup event listeners for timeline and intro preview updates
             const introFadeOutElem = document.getElementById('introFadeOut');
@@ -1750,7 +1796,6 @@
             document.getElementById('subAlignment').value = config.subtitles.alignment;
             document.getElementById('subMaxWordsPerLine').value = config.subtitles.maxWordsPerLine || 1;
             document.getElementById('subZIndex').value = config.subtitles.zIndex;
-            document.getElementById('subTextColor').value = config.subtitles.textColor;
             document.getElementById('subOutlineColor').value = config.subtitles.outlineColor;
             document.getElementById('subOutlineWidth').value = config.subtitles.outlineWidth;
             document.getElementById('subBackgroundColor').value = config.subtitles.backgroundColor;
@@ -1918,7 +1963,6 @@
             config.subtitles.alignment = document.getElementById('subAlignment').value;
             config.subtitles.maxWordsPerLine = parseInt(document.getElementById('subMaxWordsPerLine').value) || 1;
             config.subtitles.zIndex = parseInt(document.getElementById('subZIndex').value);
-            config.subtitles.textColor = document.getElementById('subTextColor').value;
             config.subtitles.outlineColor = document.getElementById('subOutlineColor').value;
             config.subtitles.outlineWidth = parseInt(document.getElementById('subOutlineWidth').value);
             config.subtitles.backgroundColor = document.getElementById('subBackgroundColor').value;
@@ -2073,7 +2117,8 @@
             const fontFamily = document.getElementById('subFontFamily').value;
             const fontSize = parseInt(document.getElementById('subFontSize').value) || 125;
             const fontWeight = document.getElementById('subFontWeight').value;
-            const textColor = document.getElementById('subTextColor').value;
+            const wordColor = document.getElementById('subWordColor').value;  // Spoken word color
+            const lineColor = document.getElementById('subLineColor').value;  // Other words color
             const outlineColor = document.getElementById('subOutlineColor').value;
             const outlineWidth = parseInt(document.getElementById('subOutlineWidth').value) || 10;
             const style = document.getElementById('subStyle').value || 'classic';
@@ -2088,13 +2133,12 @@
             // Scale font size for preview (divide by 5 for reasonable display)
             const previewFontSize = fontSize / 5;
 
-            // Apply font and color styles
+            // Apply font styles to container
             previewText.style.fontFamily = fontFamily;
             previewText.style.fontSize = previewFontSize + 'px';
             previewText.style.fontWeight = fontWeight;
-            previewText.style.color = textColor;
 
-            // Apply text stroke (outline)
+            // Apply text stroke (outline) to container
             if (outlineWidth > 0) {
                 const previewOutlineWidth = outlineWidth / 5;
                 previewText.style.webkitTextStroke = `${previewOutlineWidth}px ${outlineColor}`;
@@ -2109,6 +2153,66 @@
 
             // Add the appropriate style class
             previewText.classList.add('style-' + style);
+
+            // Apply individual word colors based on style
+            const words = previewText.querySelectorAll('.word');
+
+            if (style === 'classic') {
+                // Classic: all words shown, no animation, all use line color
+                words.forEach(word => {
+                    word.style.color = lineColor;
+                });
+            } else if (style === 'classic-progressive') {
+                // Classic Progressive: words appear one by one, highlighting current word
+                // Use CSS custom properties to create the color animation
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = `
+                    @keyframes highlightWordColor {
+                        0%, 14% {
+                            color: ${wordColor};
+                        }
+                        14.29%, 100% {
+                            color: ${lineColor};
+                        }
+                    }
+                    .subtitle-preview-text.style-classic-progressive .word {
+                        animation: highlightWordColor 7s infinite, fadeInWord 0.3s ease-in forwards;
+                    }
+                `;
+                // Remove old highlight animation style if exists
+                const oldStyle = previewText.querySelector('style.word-highlight');
+                if (oldStyle) oldStyle.remove();
+                styleSheet.classList.add('word-highlight');
+                previewText.appendChild(styleSheet);
+            } else if (style === 'classic-one-word') {
+                // Classic One Word: one word visible at a time, cycles through
+                // Each word cycles between word color (when shown) and transparent (when hidden)
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = `
+                    @keyframes cycleWordColor {
+                        0%, 14% {
+                            color: ${wordColor};
+                            opacity: 1;
+                        }
+                        14.29%, 100% {
+                            color: ${lineColor};
+                            opacity: 0;
+                        }
+                    }
+                    .subtitle-preview-text.style-classic-one-word .word {
+                        animation: cycleWordColor 7s infinite;
+                    }
+                `;
+                const oldStyle = previewText.querySelector('style.word-highlight');
+                if (oldStyle) oldStyle.remove();
+                styleSheet.classList.add('word-highlight');
+                previewText.appendChild(styleSheet);
+            } else {
+                // For boxed styles, use word color for all words
+                words.forEach(word => {
+                    word.style.color = wordColor;
+                });
+            }
 
             // Restart animations by cloning and replacing the element
             const parent = previewText.parentNode;
@@ -2140,10 +2244,13 @@
                 document.getElementById('subFontWeight').value = DEFAULTS.subtitles.fontWeight;
                 document.getElementById('subAlignment').value = DEFAULTS.subtitles.alignment;
                 document.getElementById('subZIndex').value = DEFAULTS.subtitles.zIndex;
-                document.getElementById('subTextColor').value = DEFAULTS.subtitles.textColor;
+                document.getElementById('subWordColor').value = DEFAULTS.subtitles.wordColor;
+                document.getElementById('subLineColor').value = DEFAULTS.subtitles.lineColor;
                 document.getElementById('subOutlineColor').value = DEFAULTS.subtitles.outlineColor;
                 document.getElementById('subOutlineWidth').value = DEFAULTS.subtitles.outlineWidth;
+                document.getElementById('subShadowColor').value = DEFAULTS.subtitles.shadowColor;
                 document.getElementById('subBackgroundColor').value = DEFAULTS.subtitles.backgroundColor;
+                document.getElementById('subPreviewBgColor').value = DEFAULTS.subtitles.previewBackgroundColor;
                 document.getElementById('subStyle').value = DEFAULTS.subtitles.style;
             }
             updateVolumeDisplays();
@@ -2334,7 +2441,7 @@
                             x: config.subtitles.x,
                             y: config.subtitles.y,
                             "outline-width": config.subtitles.outlineWidth,
-                            color: config.subtitles.textColor,
+                            color: config.subtitles.wordColor,
                             "outline-color": config.subtitles.outlineColor,
                             "word-color": config.subtitles.wordColor,
                             "line-color": config.subtitles.lineColor,
