@@ -2096,18 +2096,35 @@
 
                     // Use timeupdate to sync sound effect with video playback (not wall-clock time)
                     const soundEffectStartTime = soundEffect.startOffset; // in seconds
+                    let soundEffectPlayed = false; // Flag to prevent retriggering during async play transition
 
                     soundEffectTimeUpdateListener = () => {
-                        if (videoPreview.currentTime >= soundEffectStartTime && soundEffectPreview.paused) {
+                        // Check flag first to prevent race condition where audio is "paused" for a few ms after .play()
+                        if (!soundEffectPlayed && videoPreview.currentTime >= soundEffectStartTime) {
+                            soundEffectPlayed = true; // Set flag IMMEDIATELY (synchronous) before async play()
                             soundEffectPreview.currentTime = 0;
                             soundEffectPreview.play().catch(e => {
                                 console.log('Sound effect playback prevented:', e);
                             });
-                            console.log('🎧 Playing sound effect:', soundEffect.name, 'at video time:', videoPreview.currentTime);
+                            console.log('🎧 Playing sound effect:', soundEffect.name, 'at video time:', videoPreview.currentTime.toFixed(2) + 's');
                         }
                     };
 
                     videoPreview.addEventListener('timeupdate', soundEffectTimeUpdateListener);
+                }
+
+                // Pre-load background music during intro (while user gesture context is still valid)
+                // This prevents autoplay blocking when transitioning to main video
+                const backgroundMusicPreview = document.getElementById('backgroundMusicPreview');
+                const musicType = config.mainVideo.backgroundMusic || 'none';
+
+                if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
+                    const musicTrack = BACKGROUND_MUSIC[musicType];
+                    backgroundMusicPreview.src = musicTrack.url;
+                    backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
+                    backgroundMusicPreview.loop = true;
+                    backgroundMusicPreview.load(); // Pre-load during intro
+                    console.log('🎵 Pre-loading background music:', musicTrack.name);
                 }
 
                 // After intro duration, switch to main video
@@ -2156,27 +2173,37 @@
             if (musicType !== 'none' && BACKGROUND_MUSIC[musicType]) {
                 const musicTrack = BACKGROUND_MUSIC[musicType];
 
-                // Stop any currently playing music first
-                backgroundMusicPreview.pause();
+                // Reset playback position
                 backgroundMusicPreview.currentTime = 0;
 
-                // Set up the new track
-                backgroundMusicPreview.src = musicTrack.url;
-                backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
-                backgroundMusicPreview.loop = true;
-
-                // Wait for audio to be ready before playing (use 'canplay' for faster response than 'canplaythrough')
-                const onMusicReady = () => {
+                // Check if music was already pre-loaded during intro (readyState >= 2 means HAVE_CURRENT_DATA or better)
+                if (backgroundMusicPreview.readyState >= 2) {
+                    // Music is ready - play immediately
                     backgroundMusicPreview.play().then(() => {
-                        console.log('🎵 Background music playing:', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
+                        console.log('🎵 Background music playing (pre-loaded):', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
                     }).catch(e => {
                         console.warn('Background music autoplay blocked:', e);
                     });
-                    backgroundMusicPreview.removeEventListener('canplay', onMusicReady);
-                };
+                } else {
+                    // Music not ready yet - this happens when there's no intro or music wasn't pre-loaded
+                    // Set up the track now
+                    backgroundMusicPreview.src = musicTrack.url;
+                    backgroundMusicPreview.volume = config.mainVideo.musicVolume || 0.5;
+                    backgroundMusicPreview.loop = true;
 
-                backgroundMusicPreview.addEventListener('canplay', onMusicReady);
-                backgroundMusicPreview.load();
+                    // Wait for audio to be ready before playing
+                    const onMusicReady = () => {
+                        backgroundMusicPreview.play().then(() => {
+                            console.log('🎵 Background music playing (loaded on-demand):', musicTrack.name, 'at volume:', Math.round(backgroundMusicPreview.volume * 100) + '%');
+                        }).catch(e => {
+                            console.warn('Background music autoplay blocked:', e);
+                        });
+                        backgroundMusicPreview.removeEventListener('canplay', onMusicReady);
+                    };
+
+                    backgroundMusicPreview.addEventListener('canplay', onMusicReady);
+                    backgroundMusicPreview.load();
+                }
             } else {
                 // Stop any playing music if "none" is selected
                 backgroundMusicPreview.pause();
