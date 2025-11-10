@@ -890,8 +890,12 @@
                             </div>
 
                             <div style="margin-bottom: 10px;">
-                                <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Timing</div>
+                                <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Fade Effects</div>
                                 <div class="input-grid">
+                                    <div class="input-group">
+                                        <label class="input-label">Fade In Duration (s)</label>
+                                        <input type="number" class="input-field" id="introFadeIn" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade in transition">
+                                    </div>
                                     <div class="input-group">
                                         <label class="input-label">Fade Out Duration (s)</label>
                                         <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
@@ -982,8 +986,8 @@
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Music Volume</label>
-                                <input type="range" class="input-field" id="mainMusicVolume" min="0" max="1" step="0.1" value="0.5" style="padding: 0;" data-tooltip="Adjust background music volume (0-100%)">
-                                <span id="mainMusicVolumeValue" style="font-size: 12px; color: #666;">50%</span>
+                                <input type="range" class="input-field" id="mainMusicVolume" min="0" max="1" step="0.1" value="0.2" style="padding: 0;" data-tooltip="Adjust background music volume (0-100%)">
+                                <span id="mainMusicVolumeValue" style="font-size: 12px; color: #666;">20%</span>
                             </div>
                         </div>
                     </div>
@@ -1364,7 +1368,7 @@
                 baseWidth: 1826,
                 baseHeight: 1045,
                 backgroundMusic: "none",  // Background music selection
-                musicVolume: 0.5  // Music volume (0-1)
+                musicVolume: 0.2  // Music volume (0-1)
             },
             background: {
                 enabled: true,  // Enable background by default
@@ -1407,6 +1411,7 @@
                 width: 1080,
                 height: 1920,
                 zIndex: 0,
+                fadeIn: 0.3,
                 fadeOut: 0.3,
                 scale: 1.0,
                 baseWidth: 1080,
@@ -1651,6 +1656,7 @@
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
                 config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
                 config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
+                config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
                 config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
             }
 
@@ -1995,8 +2001,8 @@
             document.getElementById('mainScale').value = config.mainVideo.scale || 1.0;
             document.getElementById('mainScaleValue').textContent = (config.mainVideo.scale || 1.0).toFixed(1) + 'x';
             document.getElementById('mainBackgroundMusicSelect').value = config.mainVideo.backgroundMusic || 'none';
-            document.getElementById('mainMusicVolume').value = config.mainVideo.musicVolume || 0.5;
-            document.getElementById('mainMusicVolumeValue').textContent = Math.round((config.mainVideo.musicVolume || 0.5) * 100) + '%';
+            document.getElementById('mainMusicVolume').value = config.mainVideo.musicVolume || 0.2;
+            document.getElementById('mainMusicVolumeValue').textContent = Math.round((config.mainVideo.musicVolume || 0.2) * 100) + '%';
             // Ensure base values are set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2056,6 +2062,7 @@
             document.getElementById('introWidth').value = config.intro.width || 1080;
             document.getElementById('introHeight').value = config.intro.height || 1920;
             document.getElementById('introZIndex').value = config.intro.zIndex || 0;
+            document.getElementById('introFadeIn').value = config.intro.fadeIn || 0.3;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
             document.getElementById('introScale').value = config.intro.scale || 1.0;
             document.getElementById('introScaleValue').textContent = (config.intro.scale || 1.0).toFixed(1) + 'x';
@@ -2232,6 +2239,7 @@
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
+            config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
             config.intro.scale = parseFloat(document.getElementById('introScale').value) || 1.0;
             // Base values don't change once set
@@ -2756,8 +2764,8 @@
                         width: config.intro.width,
                         height: config.intro.height,
                         "z-index": config.intro.zIndex,
-                        "fade-in": 0.3,
-                        "fade-out": config.intro.fadeOut,
+                        "fade-in": config.intro.fadeIn || 0.3,
+                        "fade-out": config.intro.fadeOut || 0.3,
                         muted: false
                     }];
 
@@ -2819,6 +2827,18 @@
                     }
                 }
 
+                // Add background music to main scene if selected
+                if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
+                    const musicTrack = BACKGROUND_MUSIC[backgroundMusicType];
+
+                    apiMainSceneElements.push({
+                        type: "audio",
+                        src: musicTrack.url,
+                        duration: mainVideoDuration,
+                        volume: config.mainVideo.musicVolume || 0.2
+                    });
+                }
+
                 apiScenes.push({
                     comment: "Main Scene",
                     elements: apiMainSceneElements
@@ -2826,22 +2846,6 @@
 
                 // Build global elements array for API
                 const apiElements = [];
-
-                // Add background music if selected
-                if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
-                    const musicTrack = BACKGROUND_MUSIC[backgroundMusicType];
-
-                    apiElements.push({
-                        type: "audio",
-                        src: musicTrack.url,
-                        duration: -2,  // Match movie duration
-                        volume: config.mainVideo.musicVolume || 0.5,
-                        loop: -1,  // Infinite loop
-                        "fade-in": 2,
-                        "fade-out": 3,
-                        "z-index": -1
-                    });
-                }
 
                 // Add subtitles if enabled
                 if (config.subtitles.enabled) {
