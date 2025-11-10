@@ -851,6 +851,16 @@
                                 <select class="input-field" id="introSoundEffectSelect">
                                     <option value="none">None</option>
                                     <option value="finger_snap_reverb">Finger Snap Reverb</option>
+                                    <option value="snap_reverb_4sec">Snap w/ Reverb</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <label class="input-label">Sound Effect Volume</label>
+                                <select class="input-field" id="introSoundEffectVolume">
+                                    <option value="low">Low (1.0x)</option>
+                                    <option value="med" selected>Medium (2.0x)</option>
+                                    <option value="loud">Loud (3.0x)</option>
                                 </select>
                             </div>
 
@@ -875,7 +885,7 @@
                                     </div>
                                     <div class="input-group">
                                         <label class="input-label">Z-Index</label>
-                                        <input type="number" class="input-field" id="introZIndex" value="0" min="-99" max="99" data-tooltip="Higher values appear in front">
+                                        <input type="number" class="input-field" id="introZIndex" value="1" min="-99" max="99" data-tooltip="Higher values appear in front">
                                     </div>
                                 </div>
                             </div>
@@ -1322,6 +1332,12 @@
                 url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/sound%20effects/Finger%20Snap%20Reverb.m4a",
                 duration: 0.4,
                 startOffset: 2.7  // Start 2.7s into intro
+            },
+            snap_reverb_4sec: {
+                name: "Snap w/ Reverb",
+                url: "https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/sound%20effects/Snap%20w%20reverb%204%20sec.m4a",
+                duration: 4.0,
+                startOffset: 0  // Will be calculated based on intro duration
             }
         };
 
@@ -1434,11 +1450,12 @@
                 enabled: false,  // Enable intro per clip
                 videoType: "holy_shit_jamie_pull_that_video_up",
                 soundEffect: "none",  // Sound effect selection
+                soundEffectVolume: "med",  // Sound effect volume (low=1, med=2, loud=3)
                 x: 0,
                 y: 0,
                 width: 1080,
                 height: 1920,
-                zIndex: 0,
+                zIndex: 1,
                 fadeIn: 0.3,
                 fadeOut: 0.3,
                 scale: 1.0,
@@ -1721,11 +1738,12 @@
                 config.intro.enabled = document.getElementById('enableIntro').checked;
                 config.intro.videoType = document.getElementById('introVideoSelect').value;
                 config.intro.soundEffect = document.getElementById('introSoundEffectSelect').value;
+                config.intro.soundEffectVolume = document.getElementById('introSoundEffectVolume').value;
                 config.intro.x = parseInt(document.getElementById('introX').value) || 0;
                 config.intro.y = parseInt(document.getElementById('introY').value) || 0;
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
                 config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
-                config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
+                config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
                 config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
                 config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
             }
@@ -2131,6 +2149,7 @@
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
             document.getElementById('introVideoSelect').value = config.intro.videoType || 'holy_shit_jamie_pull_that_video_up';
             document.getElementById('introSoundEffectSelect').value = config.intro.soundEffect || 'none';
+            document.getElementById('introSoundEffectVolume').value = config.intro.soundEffectVolume || 'med';
 
             // Detect intro duration when clip loads
             detectIntroDuration();
@@ -2138,7 +2157,7 @@
             document.getElementById('introY').value = config.intro.y || 0;
             document.getElementById('introWidth').value = config.intro.width || 1080;
             document.getElementById('introHeight').value = config.intro.height || 1920;
-            document.getElementById('introZIndex').value = config.intro.zIndex || 0;
+            document.getElementById('introZIndex').value = config.intro.zIndex || 1;
             document.getElementById('introFadeIn').value = config.intro.fadeIn || 0.3;
             document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
             document.getElementById('introScale').value = config.intro.scale || 1.0;
@@ -2315,11 +2334,12 @@
             config.intro.enabled = document.getElementById('enableIntro').checked;
             config.intro.videoType = document.getElementById('introVideoSelect').value;
             config.intro.soundEffect = document.getElementById('introSoundEffectSelect').value;
+            config.intro.soundEffectVolume = document.getElementById('introSoundEffectVolume').value;
             config.intro.x = parseInt(document.getElementById('introX').value) || 0;
             config.intro.y = parseInt(document.getElementById('introY').value) || 0;
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
-            config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 0;
+            config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
             config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
             config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
             config.intro.scale = parseFloat(document.getElementById('introScale').value) || 1.0;
@@ -2727,12 +2747,17 @@
                         const introDuration = config.intro.detectedDuration || 3.1; // Fallback if not detected
                         const soundEffectStartTime = introDuration - soundEffect.duration;
 
+                        // Map volume setting to numeric value
+                        const volumeLevel = config.intro.soundEffectVolume || 'med';
+                        const volumeMap = { low: 1, med: 2, loud: 3 };
+                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
+
                         introElements.push({
                             type: "audio",
                             src: soundEffect.url,
                             start: soundEffectStartTime,
                             duration: soundEffect.duration,
-                            volume: 1
+                            volume: soundEffectVolume
                         });
                     }
 
@@ -2857,12 +2882,17 @@
                         const introDuration = config.intro.detectedDuration || 3.1;
                         const soundEffectStartTime = introDuration - soundEffect.duration;
 
+                        // Map volume setting to numeric value
+                        const volumeLevel = config.intro.soundEffectVolume || 'med';
+                        const volumeMap = { low: 1, med: 2, loud: 3 };
+                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
+
                         apiIntroElements.push({
                             type: "audio",
                             src: soundEffect.url,
                             start: soundEffectStartTime,
                             duration: soundEffect.duration,
-                            volume: 1
+                            volume: soundEffectVolume
                         });
                     }
 
