@@ -2737,30 +2737,6 @@
                         muted: false
                     }];
 
-                    // Add sound effect if selected
-                    const soundEffectType = config.intro.soundEffect || 'none';
-                    if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
-                        const soundEffect = SOUND_EFFECTS[soundEffectType];
-
-                        // Calculate when to start the sound effect (at the end of intro)
-                        // Start time = intro duration - sound effect duration
-                        const introDuration = config.intro.detectedDuration || 3.1; // Fallback if not detected
-                        const soundEffectStartTime = introDuration - soundEffect.duration;
-
-                        // Map volume setting to numeric value
-                        const volumeLevel = config.intro.soundEffectVolume || 'med';
-                        const volumeMap = { low: 1, med: 2, loud: 3 };
-                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
-
-                        introElements.push({
-                            type: "audio",
-                            src: soundEffect.url,
-                            start: soundEffectStartTime,
-                            duration: soundEffect.duration,
-                            volume: soundEffectVolume
-                        });
-                    }
-
                     scenes.push({
                         comment: "Intro Scene (Scene 0)",
                         elements: introElements,
@@ -2787,6 +2763,25 @@
                         volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
                     }
                 ];
+
+                // Add transition sound effect at start of main scene if intro is enabled and sound effect is selected
+                if (config.intro.enabled && config.intro.soundEffect && config.intro.soundEffect !== 'none') {
+                    const soundEffect = SOUND_EFFECTS[config.intro.soundEffect];
+                    if (soundEffect) {
+                        // Map volume setting to numeric value
+                        const volumeLevel = config.intro.soundEffectVolume || 'med';
+                        const volumeMap = { low: 1, med: 2, loud: 3 };
+                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
+
+                        mainSceneElements.push({
+                            type: "audio",
+                            src: soundEffect.url,
+                            start: 0,  // Play at start of main scene (transition point)
+                            duration: soundEffect.duration,
+                            volume: soundEffectVolume
+                        });
+                    }
+                }
 
                 const backgroundMusicType = config.mainVideo.backgroundMusic || "none";
                 if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
@@ -2875,27 +2870,6 @@
                         muted: false
                     }];
 
-                    // Add sound effect if selected
-                    const soundEffectType = config.intro.soundEffect || 'none';
-                    if (soundEffectType !== 'none' && SOUND_EFFECTS[soundEffectType]) {
-                        const soundEffect = SOUND_EFFECTS[soundEffectType];
-                        const introDuration = config.intro.detectedDuration || 3.1;
-                        const soundEffectStartTime = introDuration - soundEffect.duration;
-
-                        // Map volume setting to numeric value
-                        const volumeLevel = config.intro.soundEffectVolume || 'med';
-                        const volumeMap = { low: 1, med: 2, loud: 3 };
-                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
-
-                        apiIntroElements.push({
-                            type: "audio",
-                            src: soundEffect.url,
-                            start: soundEffectStartTime,
-                            duration: soundEffect.duration,
-                            volume: soundEffectVolume
-                        });
-                    }
-
                     apiScenes.push({
                         comment: "Intro Scene",
                         elements: apiIntroElements
@@ -2918,6 +2892,25 @@
                     "fade-in": config.mainVideo.fadeIn || 0.5,
                     "fade-out": config.mainVideo.fadeOut || 0.5
                 }];
+
+                // Add transition sound effect at start of main scene if intro is enabled and sound effect is selected
+                if (config.intro.enabled && config.intro.soundEffect && config.intro.soundEffect !== 'none') {
+                    const soundEffect = SOUND_EFFECTS[config.intro.soundEffect];
+                    if (soundEffect) {
+                        // Map volume setting to numeric value
+                        const volumeLevel = config.intro.soundEffectVolume || 'med';
+                        const volumeMap = { low: 1, med: 2, loud: 3 };
+                        const soundEffectVolume = volumeMap[volumeLevel] || 2;
+
+                        apiMainSceneElements.push({
+                            type: "audio",
+                            src: soundEffect.url,
+                            start: 0,  // Play at start of main scene (transition point)
+                            duration: soundEffect.duration,
+                            volume: soundEffectVolume
+                        });
+                    }
+                }
 
                 // Add b-roll if enabled - use intelligent clip selection
                 if (config.background.enabled) {
