@@ -829,7 +829,7 @@
                         <div id="introControls" style="display: none;">
                             <div class="input-group" style="margin-bottom: 10px;">
                                 <label class="input-label">Intro Video</label>
-                                <select class="input-field" id="introVideoSelect">
+                                <select class="input-field" id="introVideoSelect" onchange="detectIntroDuration()">
                                     <option value="holy_shit_jamie_pull_that_video_up">Holy Shit Jamie Pull That Video Up</option>
                                     <option value="behold_the_athiests_nightmare">Behold The Athiests Nightmare</option>
                                     <option value="low_battery">Low Battery</option>
@@ -957,6 +957,20 @@
                     </div>
 
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Fade Effects</div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Fade In Duration (s)</label>
+                                <input type="number" class="input-field" id="mainFadeIn" value="0.5" step="0.1" min="0" max="5" data-tooltip="Smooth fade in transition">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Fade Out Duration (s)</label>
+                                <input type="number" class="input-field" id="mainFadeOut" value="0.5" step="0.1" min="0" max="5" data-tooltip="Smooth fade out transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
                         <div style="font-weight: 600; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">Audio</div>
                         <div class="input-grid">
                             <div class="input-group">
@@ -988,6 +1002,16 @@
                                 <label class="input-label">Music Volume</label>
                                 <input type="range" class="input-field" id="mainMusicVolume" min="0" max="1" step="0.1" value="0.2" style="padding: 0;" data-tooltip="Adjust background music volume (0-100%)">
                                 <span id="mainMusicVolumeValue" style="font-size: 12px; color: #666;">20%</span>
+                            </div>
+                            <div class="input-grid" style="margin-top: 10px;">
+                                <div class="input-group">
+                                    <label class="input-label">Fade In Duration (s)</label>
+                                    <input type="number" class="input-field" id="mainMusicFadeIn" value="0" step="0.1" min="0" max="5" data-tooltip="Music fade in duration (0 for no fade)">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Fade Out Duration (s)</label>
+                                    <input type="number" class="input-field" id="mainMusicFadeOut" value="0" step="0.1" min="0" max="5" data-tooltip="Music fade out duration (0 for no fade)">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1368,7 +1392,11 @@
                 baseWidth: 1826,
                 baseHeight: 1045,
                 backgroundMusic: "none",  // Background music selection
-                musicVolume: 0.2  // Music volume (0-1)
+                musicVolume: 0.2,  // Music volume (0-1)
+                musicFadeIn: 0,  // Background music fade-in duration
+                musicFadeOut: 0,  // Background music fade-out duration
+                fadeIn: 0.5,  // Main video fade-in duration
+                fadeOut: 0.5  // Main video fade-out duration
             },
             background: {
                 enabled: true,  // Enable background by default
@@ -1633,6 +1661,48 @@
 
             // Reload video preview to apply intro changes
             reloadVideoPreview();
+        }
+
+        // Detect intro video duration when dropdown changes
+        function detectIntroDuration() {
+            const selectedIntroType = document.getElementById('introVideoSelect').value;
+            const introOption = INTRO_OPTIONS[selectedIntroType];
+
+            if (!introOption) return;
+
+            // If duration is already cached, use it
+            if (introOption.duration) {
+                const config = clipConfigurations[currentClipIndex];
+                config.intro.detectedDuration = introOption.duration;
+                console.log(`Using cached intro duration: ${introOption.duration}s`);
+                return;
+            }
+
+            // Load video metadata to detect duration
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+
+            video.onloadedmetadata = function() {
+                const duration = video.duration;
+
+                // Cache the duration in INTRO_OPTIONS
+                introOption.duration = duration;
+
+                // Store in current clip config
+                const config = clipConfigurations[currentClipIndex];
+                config.intro.detectedDuration = duration;
+
+                console.log(`Detected intro duration: ${duration}s for ${selectedIntroType}`);
+            };
+
+            video.onerror = function() {
+                console.error(`Failed to load intro video metadata for ${selectedIntroType}`);
+                // Use fallback duration
+                const config = clipConfigurations[currentClipIndex];
+                config.intro.detectedDuration = 3.1;
+            };
+
+            video.src = introOption.url;
         }
 
         // Reload video preview with current intro settings
@@ -2003,6 +2073,10 @@
             document.getElementById('mainBackgroundMusicSelect').value = config.mainVideo.backgroundMusic || 'none';
             document.getElementById('mainMusicVolume').value = config.mainVideo.musicVolume || 0.2;
             document.getElementById('mainMusicVolumeValue').textContent = Math.round((config.mainVideo.musicVolume || 0.2) * 100) + '%';
+            document.getElementById('mainMusicFadeIn').value = config.mainVideo.musicFadeIn || 0;
+            document.getElementById('mainMusicFadeOut').value = config.mainVideo.musicFadeOut || 0;
+            document.getElementById('mainFadeIn').value = config.mainVideo.fadeIn || 0.5;
+            document.getElementById('mainFadeOut').value = config.mainVideo.fadeOut || 0.5;
             // Ensure base values are set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2057,6 +2131,9 @@
             document.getElementById('introControls').style.display = config.intro.enabled ? 'block' : 'none';
             document.getElementById('introVideoSelect').value = config.intro.videoType || 'holy_shit_jamie_pull_that_video_up';
             document.getElementById('introSoundEffectSelect').value = config.intro.soundEffect || 'none';
+
+            // Detect intro duration when clip loads
+            detectIntroDuration();
             document.getElementById('introX').value = config.intro.x || 0;
             document.getElementById('introY').value = config.intro.y || 0;
             document.getElementById('introWidth').value = config.intro.width || 1080;
@@ -2191,6 +2268,10 @@
             config.mainVideo.scale = parseFloat(document.getElementById('mainScale').value) || 1.0;
             config.mainVideo.backgroundMusic = document.getElementById('mainBackgroundMusicSelect').value;
             config.mainVideo.musicVolume = parseFloat(document.getElementById('mainMusicVolume').value);
+            config.mainVideo.musicFadeIn = parseFloat(document.getElementById('mainMusicFadeIn').value) || 0;
+            config.mainVideo.musicFadeOut = parseFloat(document.getElementById('mainMusicFadeOut').value) || 0;
+            config.mainVideo.fadeIn = parseFloat(document.getElementById('mainFadeIn').value) || 0.5;
+            config.mainVideo.fadeOut = parseFloat(document.getElementById('mainFadeOut').value) || 0.5;
             // Base values don't change once set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2804,8 +2885,8 @@
                     y: config.mainVideo.y,
                     volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
                     "z-index": config.mainVideo.zIndex,
-                    "fade-in": 0.5,
-                    "fade-out": 0.5
+                    "fade-in": config.mainVideo.fadeIn || 0.5,
+                    "fade-out": config.mainVideo.fadeOut || 0.5
                 }];
 
                 // Add b-roll if enabled - use intelligent clip selection
@@ -2831,12 +2912,24 @@
                 if (backgroundMusicType !== "none" && BACKGROUND_MUSIC[backgroundMusicType]) {
                     const musicTrack = BACKGROUND_MUSIC[backgroundMusicType];
 
-                    apiMainSceneElements.push({
+                    const audioElement = {
                         type: "audio",
                         src: musicTrack.url,
                         duration: mainVideoDuration,
                         volume: config.mainVideo.musicVolume || 0.2
-                    });
+                    };
+
+                    // Add fade-in if specified (optional)
+                    if (config.mainVideo.musicFadeIn && config.mainVideo.musicFadeIn > 0) {
+                        audioElement["fade-in"] = config.mainVideo.musicFadeIn;
+                    }
+
+                    // Add fade-out if specified (optional)
+                    if (config.mainVideo.musicFadeOut && config.mainVideo.musicFadeOut > 0) {
+                        audioElement["fade-out"] = config.mainVideo.musicFadeOut;
+                    }
+
+                    apiMainSceneElements.push(audioElement);
                 }
 
                 apiScenes.push({
