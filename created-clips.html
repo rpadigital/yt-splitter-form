@@ -557,7 +557,7 @@
 
         // Display videos
         function displayVideos(videos) {
-            allVideos = videos.filter(v => v.success); // Only show successful videos
+            allVideos = videos; // All videos in response are successful
 
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('videosSection').style.display = 'block';
