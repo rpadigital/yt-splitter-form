@@ -2733,7 +2733,8 @@
                         width: config.intro.width,
                         height: config.intro.height,
                         "z-index": config.intro.zIndex,
-                        fade_out: config.intro.fadeOut,
+                        fade_in: config.intro.fadeIn ?? 0.3,
+                        fade_out: config.intro.fadeOut ?? 0.3,
                         muted: false
                     }];
 
@@ -2760,7 +2761,9 @@
                         height: config.mainVideo.height,
                         x: config.mainVideo.x,
                         y: config.mainVideo.y,
-                        volume: config.mainVideo.mute ? 0 : config.mainVideo.volume
+                        volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
+                        fade_in: config.mainVideo.fadeIn ?? 0.5,
+                        fade_out: config.mainVideo.fadeOut ?? 0.5
                     }
                 ];
 
@@ -2865,8 +2868,8 @@
                         width: config.intro.width,
                         height: config.intro.height,
                         "z-index": config.intro.zIndex,
-                        "fade-in": config.intro.fadeIn || 0.3,
-                        "fade-out": config.intro.fadeOut || 0.3,
+                        "fade-in": config.intro.fadeIn ?? 0.3,
+                        "fade-out": config.intro.fadeOut ?? 0.3,
                         muted: false
                     }];
 
@@ -2889,8 +2892,8 @@
                     y: config.mainVideo.y,
                     volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
                     "z-index": config.mainVideo.zIndex,
-                    "fade-in": config.mainVideo.fadeIn || 0.5,
-                    "fade-out": config.mainVideo.fadeOut || 0.5
+                    "fade-in": config.mainVideo.fadeIn ?? 0.5,
+                    "fade-out": config.mainVideo.fadeOut ?? 0.5
                 }];
 
                 // Add transition sound effect at start of main scene if intro is enabled and sound effect is selected
