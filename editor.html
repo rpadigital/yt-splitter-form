@@ -3036,8 +3036,8 @@
                 });
 
                 if (response.ok) {
-                    document.getElementById('successMessage').classList.add('show');
-                    submitBtn.textContent = 'Submitted!';
+                    // Redirect to final results page
+                    window.location.href = `created-clips.html?job_id=${editorData.job_id}`;
                 } else {
                     throw new Error('Submission failed');
                 }
