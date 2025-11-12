@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 5 Video Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .job-id {
+            color: #666;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+        }
+
+        .scene-counter {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 810px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .canvas-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 20px;
+        }
+
+        .canvas-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 810px;
+            aspect-ratio: 9 / 16;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 3;
+        }
+
+        .preview-video-layer {
+            position: absolute;
+            pointer-events: none;
+            object-fit: cover;
+            z-index: 2;
+        }
+
+        .preview-text-layer {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            color: white;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-align: left;
+            padding: 20px;
+        }
+
+        .preview-text-layer h3 {
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .preview-text-layer ol {
+            margin-left: 20px;
+        }
+
+        .preview-text-layer li {
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .scene-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .section-controls {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .input-field {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-picker-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .color-picker-item label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .color-picker-item input[type="color"] {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .submit-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .submit-btn {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #999;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .editor-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .canvas-section {
+                position: relative;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Top 5 Video Editor</h1>
+            <div class="job-id">Job ID: <span id="jobIdDisplay"></span></div>
+            <div class="scene-counter">
+                Scene <span id="currentSceneNum">1</span> of 5 • Position: <span id="currentPositionNum">#5</span>
+            </div>
+        </div>
+
+        <div class="editor-layout">
+            <!-- Canvas Preview -->
+            <div class="canvas-section">
+                <div class="canvas-title">Preview (1080x1920)</div>
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="previewCanvas" width="810" height="1440"></canvas>
+                    <video id="videoPreview" class="preview-video-layer" loop autoplay muted playsinline></video>
+                    <div id="textPreview" class="preview-text-layer"></div>
+                </div>
+                <div class="help-text">
+                    Preview shows cumulative list up to current scene
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <div class="controls-header">
+                    <h2 style="color: #333;">Scene Configuration</h2>
+                    <div class="scene-nav">
+                        <button class="nav-btn" id="prevBtn" onclick="prevScene()">← Previous</button>
+                        <button class="nav-btn" id="nextBtn" onclick="nextScene()">Next →</button>
+                    </div>
+                </div>
+
+                <!-- Scene Clip Selection -->
+                <div class="section-controls">
+                    <div class="section-title">Clip Selection for This Scene</div>
+                    <div class="input-group">
+                        <label class="input-label">Select Clip</label>
+                        <select class="input-field" id="clipSelect" onchange="updateClipSelection()">
+                            <option value="">-- Select a clip --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="section-controls">
+                    <div class="section-title">Text Content for Position <span id="positionLabel">#5</span></div>
+                    <div class="input-group">
+                        <label class="input-label">Enter Text</label>
+                        <textarea class="input-field" id="textContent" placeholder="e.g., Fifth thing" oninput="updatePreview()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Video Positioning -->
+                <div class="section-controls">
+                    <div class="section-title">Video Position & Size</div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">X Position</label>
+                            <input type="number" class="input-field" id="videoX" value="0" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Y Position</label>
+                            <input type="number" class="input-field" id="videoY" value="0" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Width</label>
+                            <input type="number" class="input-field" id="videoWidth" value="1080" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Height</label>
+                            <input type="number" class="input-field" id="videoHeight" value="1920" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label class="input-label">Scale (Zoom)</label>
+                        <input type="range" class="input-field" id="videoScale" min="0.5" max="2" step="0.1" value="1.0" style="padding: 0;" oninput="scaleVideo(this.value)">
+                        <span id="videoScaleValue" style="font-size: 12px; color: #666;">1.0x</span>
+                    </div>
+                </div>
+
+                <!-- Global Text Styling -->
+                <div class="section-controls">
+                    <div class="section-title">Global Text Styling (All Scenes)</div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">Text X Position</label>
+                            <input type="number" class="input-field" id="textX" value="25" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Text Y Position</label>
+                            <input type="number" class="input-field" id="textY" value="260" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Text Width</label>
+                            <input type="number" class="input-field" id="textWidth" value="586" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Text Height</label>
+                            <input type="number" class="input-field" id="textHeight" value="747" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Font Family</label>
+                            <select class="input-field" id="fontFamily" onchange="updatePreview()">
+                                <option value="Roboto Condensed" selected>Roboto Condensed</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Impact">Impact</option>
+                                <option value="Verdana">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Font Size (px)</label>
+                            <input type="number" class="input-field" id="fontSize" value="60" min="20" max="120" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Outline Width</label>
+                            <input type="number" class="input-field" id="outlineWidth" value="2" min="0" max="10" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Shadow Offset</label>
+                            <input type="number" class="input-field" id="shadowOffset" value="2" min="0" max="10" oninput="updatePreview()">
+                        </div>
+                    </div>
+
+                    <!-- Individual Item Colors -->
+                    <div style="margin-top: 20px;">
+                        <label class="input-label">Individual Item Colors</label>
+                        <div class="color-picker-grid">
+                            <div class="color-picker-item">
+                                <label>#1</label>
+                                <input type="color" id="color1" value="#FFFFFF" oninput="updatePreview()">
+                            </div>
+                            <div class="color-picker-item">
+                                <label>#2</label>
+                                <input type="color" id="color2" value="#FFFFFF" oninput="updatePreview()">
+                            </div>
+                            <div class="color-picker-item">
+                                <label>#3</label>
+                                <input type="color" id="color3" value="#FFFFFF" oninput="updatePreview()">
+                            </div>
+                            <div class="color-picker-item">
+                                <label>#4</label>
+                                <input type="color" id="color4" value="#FFFFFF" oninput="updatePreview()">
+                            </div>
+                            <div class="color-picker-item">
+                                <label>#5</label>
+                                <input type="color" id="color5" value="#FFFFFF" oninput="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="submit-section">
+                    <button class="submit-btn" id="submitBtn" onclick="submitConfiguration()">
+                        Generate Top 5 Video
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
+        const BASE_WIDTH = 1080;
+        let SCALE = 1;
+
+        let editorData = null;
+        let currentSceneIndex = 0;
+        let top5Config = null;
+
+        // Default configuration
+        const DEFAULTS = {
+            video: {
+                x: 0,
+                y: 0,
+                width: 1080,
+                height: 1920,
+                scale: 1.0,
+                baseWidth: 1080,
+                baseHeight: 1920
+            },
+            globalText: {
+                x: 25,
+                y: 260,
+                width: 586,
+                height: 747,
+                fontFamily: "Roboto Condensed",
+                fontSize: 60,
+                outlineWidth: 2,
+                shadowOffset: 2,
+                colors: {
+                    1: "#FFFFFF",
+                    2: "#FFFFFF",
+                    3: "#FFFFFF",
+                    4: "#FFFFFF",
+                    5: "#FFFFFF"
+                }
+            }
+        };
+
+        // Update scale based on container size
+        function updateScale() {
+            const container = document.getElementById('canvasContainer');
+            SCALE = container.offsetWidth / BASE_WIDTH;
+
+            const canvas = document.getElementById('previewCanvas');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load data from sessionStorage
+            const storedData = sessionStorage.getItem('editorData');
+            if (!storedData) {
+                alert('No clip data found. Redirecting to results page.');
+                window.location.href = 'results.html';
+                return;
+            }
+
+            editorData = JSON.parse(storedData);
+
+            // Initialize scale
+            updateScale();
+
+            // Display job info
+            document.getElementById('jobIdDisplay').textContent = editorData.job_id;
+
+            // Populate clip selector
+            const clipSelect = document.getElementById('clipSelect');
+            editorData.selected_clips.forEach((clip, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Clip ${index + 1}: ${clip.filename} (${clip.duration.toFixed(1)}s)`;
+                clipSelect.appendChild(option);
+            });
+
+            // Initialize top5Config with 5 scenes
+            top5Config = {
+                job_id: editorData.job_id,
+                scenes: [
+                    { sceneIndex: 0, position: 5, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } },
+                    { sceneIndex: 1, position: 4, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } },
+                    { sceneIndex: 2, position: 3, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } },
+                    { sceneIndex: 3, position: 2, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } },
+                    { sceneIndex: 4, position: 1, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } }
+                ],
+                globalText: { ...DEFAULTS.globalText }
+            };
+
+            // Load first scene
+            loadScene(0);
+
+            // Setup resize listener
+            window.addEventListener('resize', () => {
+                updateScale();
+                updatePreview();
+            });
+        });
+
+        // Load scene configuration
+        function loadScene(index) {
+            currentSceneIndex = index;
+            const scene = top5Config.scenes[index];
+
+            // Update UI
+            document.getElementById('currentSceneNum').textContent = index + 1;
+            document.getElementById('currentPositionNum').textContent = '#' + scene.position;
+            document.getElementById('positionLabel').textContent = '#' + scene.position;
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === 4;
+
+            // Load scene-specific values
+            document.getElementById('clipSelect').value = scene.clipIndex !== null ? scene.clipIndex : "";
+            document.getElementById('textContent').value = scene.textContent;
+            document.getElementById('videoX').value = scene.videoConfig.x;
+            document.getElementById('videoY').value = scene.videoConfig.y;
+            document.getElementById('videoWidth').value = scene.videoConfig.width;
+            document.getElementById('videoHeight').value = scene.videoConfig.height;
+            document.getElementById('videoScale').value = scene.videoConfig.scale;
+            document.getElementById('videoScaleValue').textContent = scene.videoConfig.scale.toFixed(1) + 'x';
+
+            // Load global text values (same for all scenes)
+            document.getElementById('textX').value = top5Config.globalText.x;
+            document.getElementById('textY').value = top5Config.globalText.y;
+            document.getElementById('textWidth').value = top5Config.globalText.width;
+            document.getElementById('textHeight').value = top5Config.globalText.height;
+            document.getElementById('fontFamily').value = top5Config.globalText.fontFamily;
+            document.getElementById('fontSize').value = top5Config.globalText.fontSize;
+            document.getElementById('outlineWidth').value = top5Config.globalText.outlineWidth;
+            document.getElementById('shadowOffset').value = top5Config.globalText.shadowOffset;
+            document.getElementById('color1').value = top5Config.globalText.colors[1];
+            document.getElementById('color2').value = top5Config.globalText.colors[2];
+            document.getElementById('color3').value = top5Config.globalText.colors[3];
+            document.getElementById('color4').value = top5Config.globalText.colors[4];
+            document.getElementById('color5').value = top5Config.globalText.colors[5];
+
+            // Update preview
+            updatePreview();
+        }
+
+        // Save current scene configuration
+        function saveCurrentScene() {
+            const scene = top5Config.scenes[currentSceneIndex];
+
+            // Save scene-specific values
+            scene.clipIndex = document.getElementById('clipSelect').value !== "" ? parseInt(document.getElementById('clipSelect').value) : null;
+            scene.textContent = document.getElementById('textContent').value;
+            scene.videoConfig.x = parseInt(document.getElementById('videoX').value);
+            scene.videoConfig.y = parseInt(document.getElementById('videoY').value);
+            scene.videoConfig.width = parseInt(document.getElementById('videoWidth').value);
+            scene.videoConfig.height = parseInt(document.getElementById('videoHeight').value);
+            scene.videoConfig.scale = parseFloat(document.getElementById('videoScale').value);
+
+            // Save global text values
+            top5Config.globalText.x = parseInt(document.getElementById('textX').value);
+            top5Config.globalText.y = parseInt(document.getElementById('textY').value);
+            top5Config.globalText.width = parseInt(document.getElementById('textWidth').value);
+            top5Config.globalText.height = parseInt(document.getElementById('textHeight').value);
+            top5Config.globalText.fontFamily = document.getElementById('fontFamily').value;
+            top5Config.globalText.fontSize = parseInt(document.getElementById('fontSize').value);
+            top5Config.globalText.outlineWidth = parseInt(document.getElementById('outlineWidth').value);
+            top5Config.globalText.shadowOffset = parseInt(document.getElementById('shadowOffset').value);
+            top5Config.globalText.colors[1] = document.getElementById('color1').value;
+            top5Config.globalText.colors[2] = document.getElementById('color2').value;
+            top5Config.globalText.colors[3] = document.getElementById('color3').value;
+            top5Config.globalText.colors[4] = document.getElementById('color4').value;
+            top5Config.globalText.colors[5] = document.getElementById('color5').value;
+        }
+
+        // Navigation
+        function prevScene() {
+            if (currentSceneIndex > 0) {
+                saveCurrentScene();
+                loadScene(currentSceneIndex - 1);
+            }
+        }
+
+        function nextScene() {
+            if (currentSceneIndex < 4) {
+                saveCurrentScene();
+                loadScene(currentSceneIndex + 1);
+            }
+        }
+
+        // Update clip selection
+        function updateClipSelection() {
+            updatePreview();
+        }
+
+        // Scale video proportionally
+        function scaleVideo(scaleValue) {
+            const scene = top5Config.scenes[currentSceneIndex];
+            const scale = parseFloat(scaleValue);
+
+            document.getElementById('videoScaleValue').textContent = scale.toFixed(1) + 'x';
+
+            const newWidth = Math.round(scene.videoConfig.baseWidth * scale);
+            const newHeight = Math.round(scene.videoConfig.baseHeight * scale);
+
+            document.getElementById('videoWidth').value = newWidth;
+            document.getElementById('videoHeight').value = newHeight;
+
+            scene.videoConfig.scale = scale;
+            updatePreview();
+        }
+
+        // Build cumulative text HTML for current scene
+        function buildTextForScene() {
+            const currentScene = top5Config.scenes[currentSceneIndex];
+            const startPosition = currentScene.position;  // 5, 4, 3, 2, or 1
+
+            let html = "<h3>Top 5:</h3>\n<ol start=\"" + startPosition + "\">\n";
+
+            // Build list from startPosition to 5 (showing cumulative reveal)
+            for (let pos = startPosition; pos <= 5; pos++) {
+                const scene = top5Config.scenes.find(s => s.position === pos);
+                const color = top5Config.globalText.colors[pos];
+                const text = scene.textContent || `Item ${pos}`;
+                html += `  <li style="color: ${color}">${text}</li>\n`;
+            }
+
+            html += "</ol>";
+            return html;
+        }
+
+        // Update canvas preview
+        function updatePreview() {
+            saveCurrentScene();  // Save current form state
+
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            const scene = top5Config.scenes[currentSceneIndex];
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid lines for reference
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const x = (canvas.width / 10) * i;
+                const y = (canvas.height / 10) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Update video preview position
+            const videoPreview = document.getElementById('videoPreview');
+            videoPreview.style.left = (scene.videoConfig.x * SCALE) + 'px';
+            videoPreview.style.top = (scene.videoConfig.y * SCALE) + 'px';
+            videoPreview.style.width = (scene.videoConfig.width * SCALE) + 'px';
+            videoPreview.style.height = (scene.videoConfig.height * SCALE) + 'px';
+
+            // Load video if clip is selected
+            if (scene.clipIndex !== null) {
+                const clip = editorData.selected_clips[scene.clipIndex];
+                videoPreview.src = clip.url;
+                videoPreview.load();
+                videoPreview.play().catch(e => console.log('Video play prevented:', e));
+            } else {
+                videoPreview.src = "";
+            }
+
+            // Update text preview
+            const textPreview = document.getElementById('textPreview');
+            textPreview.innerHTML = buildTextForScene();
+            textPreview.style.left = (top5Config.globalText.x * SCALE) + 'px';
+            textPreview.style.top = (top5Config.globalText.y * SCALE) + 'px';
+            textPreview.style.width = (top5Config.globalText.width * SCALE) + 'px';
+            textPreview.style.height = (top5Config.globalText.height * SCALE) + 'px';
+            textPreview.style.fontSize = (top5Config.globalText.fontSize * SCALE / 10) + 'px';  // Scale down for preview
+            textPreview.style.fontFamily = top5Config.globalText.fontFamily;
+
+            // Apply text stroke (outline) if specified
+            if (top5Config.globalText.outlineWidth > 0) {
+                textPreview.style.webkitTextStroke = `${top5Config.globalText.outlineWidth * SCALE / 10}px black`;
+            }
+        }
+
+        // Submit configuration
+        async function submitConfiguration() {
+            saveCurrentScene();
+
+            // Validate that all scenes have clips selected
+            const missingClips = top5Config.scenes.filter(s => s.clipIndex === null);
+            if (missingClips.length > 0) {
+                alert(`Please select clips for all ${missingClips.length} remaining scene(s)`);
+                return;
+            }
+
+            // Validate that all scenes have text content
+            const missingText = top5Config.scenes.filter(s => !s.textContent.trim());
+            if (missingText.length > 0) {
+                alert(`Please enter text for all ${missingText.length} remaining item(s)`);
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Generating...';
+
+            // Build JSON2Video payload
+            const scenes = top5Config.scenes.map((scene, index) => {
+                const clip = editorData.selected_clips[scene.clipIndex];
+
+                // Build cumulative text for this scene
+                let textHtml = "<h3>Top 5:</h3>\n<ol start=\"" + scene.position + "\">\n";
+                for (let pos = scene.position; pos <= 5; pos++) {
+                    const s = top5Config.scenes.find(sc => sc.position === pos);
+                    const color = top5Config.globalText.colors[pos];
+                    textHtml += `  <li style="color: ${color}">${s.textContent}</li>\n`;
+                }
+                textHtml += "</ol>";
+
+                return {
+                    comment: `Scene ${index + 1} - Position #${scene.position}`,
+                    elements: [
+                        {
+                            type: "video",
+                            src: clip.url,
+                            x: scene.videoConfig.x,
+                            y: scene.videoConfig.y,
+                            width: scene.videoConfig.width,
+                            height: scene.videoConfig.height,
+                            duration: clip.duration
+                        },
+                        {
+                            type: "text",
+                            style: "001",
+                            text: textHtml,
+                            settings: {
+                                color: "#000000",
+                                "font-size": top5Config.globalText.fontSize + "px",
+                                "font-family": top5Config.globalText.fontFamily,
+                                shadow: top5Config.globalText.shadowOffset,
+                                "text-align": "left",
+                                "vertical-align": "center",
+                                "margin": "3vw"
+                            },
+                            x: top5Config.globalText.x,
+                            y: top5Config.globalText.y,
+                            width: top5Config.globalText.width,
+                            height: top5Config.globalText.height,
+                            duration: clip.duration,
+                            "z-index": 10
+                        }
+                    ]
+                };
+            });
+
+            const payload = {
+                job_id: editorData.job_id,
+                action: "create_top5_video",
+                json2video_api_payload: {
+                    width: 1080,
+                    height: 1920,
+                    quality: "high",
+                    scenes: scenes,
+                    elements: [],
+                    exports: [{
+                        destinations: [{
+                            id: "make-webhook"
+                        }]
+                    }],
+                    "client-data": {
+                        "job_id": editorData.job_id,
+                        "video_type": "top5"
+                    }
+                }
+            };
+
+            console.log('Top 5 Payload:', JSON.stringify(payload, null, 2));
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    window.location.href = `created-clips.html?job_id=${editorData.job_id}`;
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to submit configuration. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Generate Top 5 Video';
+            }
+        }
+    </script>
+</body>
+</html>

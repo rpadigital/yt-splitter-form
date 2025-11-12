@@ -734,6 +734,9 @@
                     <button class="secondary-btn" id="continueToEditorBtn" onclick="continueToEditor()" disabled>
                         Continue to Editor
                     </button>
+                    <button class="secondary-btn" id="continueToTop5EditorBtn" onclick="continueToTop5Editor()" disabled style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                        Create Top 5 Video
+                    </button>
                 </div>
 
                 <div class="broll-success-message" id="brollSuccessMessage">
@@ -778,13 +781,16 @@
             // Enable buttons if clips selected
             const generateBtn = document.getElementById('generateBRollBtn');
             const editorBtn = document.getElementById('continueToEditorBtn');
+            const top5EditorBtn = document.getElementById('continueToTop5EditorBtn');
 
             if (count > 0) {
                 generateBtn.disabled = false;
                 editorBtn.disabled = false;
+                top5EditorBtn.disabled = false;
             } else {
                 generateBtn.disabled = true;
                 editorBtn.disabled = true;
+                top5EditorBtn.disabled = true;
             }
 
             // Update select all checkbox state
@@ -862,6 +868,22 @@
 
             // Redirect to editor
             window.location.href = `editor.html?job_id=${jobId}`;
+        }
+
+        // Continue to Top 5 editor
+        function continueToTop5Editor() {
+            const selectedClips = getSelectedClips();
+
+            // Store in sessionStorage
+            const editorData = {
+                job_id: jobId,
+                selected_clips: selectedClips
+            };
+
+            sessionStorage.setItem('editorData', JSON.stringify(editorData));
+
+            // Redirect to Top 5 editor
+            window.location.href = `top5-editor.html?job_id=${jobId}`;
         }
 
         // Toggle select all
