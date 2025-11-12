@@ -2093,8 +2093,8 @@
             document.getElementById('mainMusicVolumeValue').textContent = Math.round((config.mainVideo.musicVolume || 0.2) * 100) + '%';
             document.getElementById('mainMusicFadeIn').value = config.mainVideo.musicFadeIn || 0;
             document.getElementById('mainMusicFadeOut').value = config.mainVideo.musicFadeOut || 0;
-            document.getElementById('mainFadeIn').value = config.mainVideo.fadeIn || 0.5;
-            document.getElementById('mainFadeOut').value = config.mainVideo.fadeOut || 0.5;
+            document.getElementById('mainFadeIn').value = config.mainVideo.fadeIn ?? 0;
+            document.getElementById('mainFadeOut').value = config.mainVideo.fadeOut ?? 0;
             // Ensure base values are set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2158,8 +2158,8 @@
             document.getElementById('introWidth').value = config.intro.width || 1080;
             document.getElementById('introHeight').value = config.intro.height || 1920;
             document.getElementById('introZIndex').value = config.intro.zIndex || 1;
-            document.getElementById('introFadeIn').value = config.intro.fadeIn || 0.3;
-            document.getElementById('introFadeOut').value = config.intro.fadeOut || 0.3;
+            document.getElementById('introFadeIn').value = config.intro.fadeIn ?? 0;
+            document.getElementById('introFadeOut').value = config.intro.fadeOut ?? 0;
             document.getElementById('introScale').value = config.intro.scale || 1.0;
             document.getElementById('introScaleValue').textContent = (config.intro.scale || 1.0).toFixed(1) + 'x';
             // Ensure base values are set
