@@ -1744,8 +1744,8 @@
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
                 config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
                 config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
-                config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
-                config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
+                config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0.3;
+                config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0.3;
             }
 
             // Reload with updated settings
@@ -2289,8 +2289,8 @@
             config.mainVideo.musicVolume = parseFloat(document.getElementById('mainMusicVolume').value);
             config.mainVideo.musicFadeIn = parseFloat(document.getElementById('mainMusicFadeIn').value) || 0;
             config.mainVideo.musicFadeOut = parseFloat(document.getElementById('mainMusicFadeOut').value) || 0;
-            config.mainVideo.fadeIn = parseFloat(document.getElementById('mainFadeIn').value) || 0.5;
-            config.mainVideo.fadeOut = parseFloat(document.getElementById('mainFadeOut').value) || 0.5;
+            config.mainVideo.fadeIn = parseFloat(document.getElementById('mainFadeIn').value) ?? 0.5;
+            config.mainVideo.fadeOut = parseFloat(document.getElementById('mainFadeOut').value) ?? 0.5;
             // Base values don't change once set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2340,8 +2340,8 @@
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
-            config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) || 0.3;
-            config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) || 0.3;
+            config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0.3;
+            config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0.3;
             config.intro.scale = parseFloat(document.getElementById('introScale').value) || 1.0;
             // Base values don't change once set
             if (!config.intro.baseWidth) config.intro.baseWidth = DEFAULTS.intro.baseWidth;
