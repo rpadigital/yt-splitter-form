@@ -904,11 +904,11 @@
                                 <div class="input-grid">
                                     <div class="input-group">
                                         <label class="input-label">Fade In Duration (s)</label>
-                                        <input type="number" class="input-field" id="introFadeIn" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade in transition">
+                                        <input type="number" class="input-field" id="introFadeIn" value="0" step="0.1" min="0" max="2" data-tooltip="Smooth fade in transition">
                                     </div>
                                     <div class="input-group">
                                         <label class="input-label">Fade Out Duration (s)</label>
-                                        <input type="number" class="input-field" id="introFadeOut" value="0.3" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
+                                        <input type="number" class="input-field" id="introFadeOut" value="0" step="0.1" min="0" max="2" data-tooltip="Smooth fade out transition">
                                     </div>
                                 </div>
                                 <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
@@ -971,11 +971,11 @@
                         <div class="input-grid">
                             <div class="input-group">
                                 <label class="input-label">Fade In Duration (s)</label>
-                                <input type="number" class="input-field" id="mainFadeIn" value="0.5" step="0.1" min="0" max="5" data-tooltip="Smooth fade in transition">
+                                <input type="number" class="input-field" id="mainFadeIn" value="0" step="0.1" min="0" max="5" data-tooltip="Smooth fade in transition">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Fade Out Duration (s)</label>
-                                <input type="number" class="input-field" id="mainFadeOut" value="0.5" step="0.1" min="0" max="5" data-tooltip="Smooth fade out transition">
+                                <input type="number" class="input-field" id="mainFadeOut" value="0" step="0.1" min="0" max="5" data-tooltip="Smooth fade out transition">
                             </div>
                         </div>
                     </div>
@@ -1744,8 +1744,8 @@
                 config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
                 config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
                 config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
-                config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0.3;
-                config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0.3;
+                config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0;
+                config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0;
             }
 
             // Reload with updated settings
@@ -2289,8 +2289,8 @@
             config.mainVideo.musicVolume = parseFloat(document.getElementById('mainMusicVolume').value);
             config.mainVideo.musicFadeIn = parseFloat(document.getElementById('mainMusicFadeIn').value) || 0;
             config.mainVideo.musicFadeOut = parseFloat(document.getElementById('mainMusicFadeOut').value) || 0;
-            config.mainVideo.fadeIn = parseFloat(document.getElementById('mainFadeIn').value) ?? 0.5;
-            config.mainVideo.fadeOut = parseFloat(document.getElementById('mainFadeOut').value) ?? 0.5;
+            config.mainVideo.fadeIn = parseFloat(document.getElementById('mainFadeIn').value) ?? 0;
+            config.mainVideo.fadeOut = parseFloat(document.getElementById('mainFadeOut').value) ?? 0;
             // Base values don't change once set
             if (!config.mainVideo.baseWidth) config.mainVideo.baseWidth = DEFAULTS.mainVideo.baseWidth;
             if (!config.mainVideo.baseHeight) config.mainVideo.baseHeight = DEFAULTS.mainVideo.baseHeight;
@@ -2340,8 +2340,8 @@
             config.intro.width = parseInt(document.getElementById('introWidth').value) || 1080;
             config.intro.height = parseInt(document.getElementById('introHeight').value) || 1920;
             config.intro.zIndex = parseInt(document.getElementById('introZIndex').value) || 1;
-            config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0.3;
-            config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0.3;
+            config.intro.fadeIn = parseFloat(document.getElementById('introFadeIn').value) ?? 0;
+            config.intro.fadeOut = parseFloat(document.getElementById('introFadeOut').value) ?? 0;
             config.intro.scale = parseFloat(document.getElementById('introScale').value) || 1.0;
             // Base values don't change once set
             if (!config.intro.baseWidth) config.intro.baseWidth = DEFAULTS.intro.baseWidth;
@@ -2733,8 +2733,8 @@
                         width: config.intro.width,
                         height: config.intro.height,
                         "z-index": config.intro.zIndex,
-                        fade_in: config.intro.fadeIn ?? 0.3,
-                        fade_out: config.intro.fadeOut ?? 0.3,
+                        fade_in: config.intro.fadeIn ?? 0,
+                        fade_out: config.intro.fadeOut ?? 0,
                         muted: false
                     }];
 
@@ -2762,8 +2762,8 @@
                         x: config.mainVideo.x,
                         y: config.mainVideo.y,
                         volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
-                        fade_in: config.mainVideo.fadeIn ?? 0.5,
-                        fade_out: config.mainVideo.fadeOut ?? 0.5
+                        fade_in: config.mainVideo.fadeIn ?? 0,
+                        fade_out: config.mainVideo.fadeOut ?? 0
                     }
                 ];
 
@@ -2868,8 +2868,8 @@
                         width: config.intro.width,
                         height: config.intro.height,
                         "z-index": config.intro.zIndex,
-                        "fade-in": config.intro.fadeIn ?? 0.3,
-                        "fade-out": config.intro.fadeOut ?? 0.3,
+                        "fade-in": config.intro.fadeIn ?? 0,
+                        "fade-out": config.intro.fadeOut ?? 0,
                         muted: false
                     }];
 
@@ -2892,8 +2892,8 @@
                     y: config.mainVideo.y,
                     volume: config.mainVideo.mute ? 0 : config.mainVideo.volume,
                     "z-index": config.mainVideo.zIndex,
-                    "fade-in": config.mainVideo.fadeIn ?? 0.5,
-                    "fade-out": config.mainVideo.fadeOut ?? 0.5
+                    "fade-in": config.mainVideo.fadeIn ?? 0,
+                    "fade-out": config.mainVideo.fadeOut ?? 0
                 }];
 
                 // Add transition sound effect at start of main scene if intro is enabled and sound effect is selected
