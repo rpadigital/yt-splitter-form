@@ -556,6 +556,9 @@
             // Load first scene
             loadScene(0);
 
+            // Setup drag-and-drop for video positioning
+            setupDragAndDrop();
+
             // Setup resize listener
             window.addEventListener('resize', () => {
                 updateScale();
@@ -677,14 +680,21 @@
             const currentScene = top5Config.scenes[currentSceneIndex];
             const startPosition = currentScene.position;  // 5, 4, 3, 2, or 1
 
-            let html = "<h3>Top 5:</h3>\n<ol start=\"" + startPosition + "\">\n";
+            let html = "<h3>Top 5:</h3>\n<ol start=\"1\">\n";
 
-            // Build list from startPosition to 5 (showing cumulative reveal)
-            for (let pos = startPosition; pos <= 5; pos++) {
+            // Show all 5 items, with revealed items showing text and unrevealed items blank
+            for (let pos = 1; pos <= 5; pos++) {
                 const scene = top5Config.scenes.find(s => s.position === pos);
                 const color = top5Config.globalText.colors[pos];
-                const text = scene.textContent || `Item ${pos}`;
-                html += `  <li style="color: ${color}">${text}</li>\n`;
+
+                // If this position has been revealed (pos >= startPosition), show the text
+                if (pos >= startPosition) {
+                    const text = scene.textContent || `Item ${pos}`;
+                    html += `  <li style="color: ${color}">${text}</li>\n`;
+                } else {
+                    // Unrevealed - show blank placeholder
+                    html += `  <li style="color: #666; opacity: 0.3;">___________</li>\n`;
+                }
             }
 
             html += "</ol>";
@@ -742,13 +752,72 @@
             textPreview.style.top = (top5Config.globalText.y * SCALE) + 'px';
             textPreview.style.width = (top5Config.globalText.width * SCALE) + 'px';
             textPreview.style.height = (top5Config.globalText.height * SCALE) + 'px';
-            textPreview.style.fontSize = (top5Config.globalText.fontSize * SCALE / 10) + 'px';  // Scale down for preview
+            textPreview.style.fontSize = (top5Config.globalText.fontSize * SCALE) + 'px';  // Proper scaling
             textPreview.style.fontFamily = top5Config.globalText.fontFamily;
 
             // Apply text stroke (outline) if specified
             if (top5Config.globalText.outlineWidth > 0) {
-                textPreview.style.webkitTextStroke = `${top5Config.globalText.outlineWidth * SCALE / 10}px black`;
+                textPreview.style.webkitTextStroke = `${top5Config.globalText.outlineWidth * SCALE}px black`;
+                textPreview.style.textStroke = `${top5Config.globalText.outlineWidth * SCALE}px black`;
             }
+        }
+
+        // Setup drag-and-drop for video positioning
+        function setupDragAndDrop() {
+            const canvas = document.getElementById('previewCanvas');
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / SCALE;
+                const y = (e.clientY - rect.top) / SCALE;
+
+                const scene = top5Config.scenes[currentSceneIndex];
+                const videoX = scene.videoConfig.x;
+                const videoY = scene.videoConfig.y;
+                const videoWidth = scene.videoConfig.width;
+                const videoHeight = scene.videoConfig.height;
+
+                // Check if click is within video bounds
+                if (x >= videoX && x <= videoX + videoWidth &&
+                    y >= videoY && y <= videoY + videoHeight) {
+                    isDragging = true;
+                    dragOffset = { x: x - videoX, y: y - videoY };
+                    canvas.style.cursor = 'grabbing';
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / SCALE;
+                const y = (e.clientY - rect.top) / SCALE;
+
+                // Update video position
+                document.getElementById('videoX').value = Math.round(x - dragOffset.x);
+                document.getElementById('videoY').value = Math.round(y - dragOffset.y);
+
+                updatePreview();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    canvas.style.cursor = 'move';
+                }
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    canvas.style.cursor = 'move';
+                }
+            });
+
+            // Set cursor style
+            canvas.style.cursor = 'move';
         }
 
         // Submit configuration
@@ -777,12 +846,19 @@
             const scenes = top5Config.scenes.map((scene, index) => {
                 const clip = editorData.selected_clips[scene.clipIndex];
 
-                // Build cumulative text for this scene
-                let textHtml = "<h3>Top 5:</h3>\n<ol start=\"" + scene.position + "\">\n";
-                for (let pos = scene.position; pos <= 5; pos++) {
+                // Build cumulative text for this scene (all 5 items, with blanks for unrevealed)
+                let textHtml = "<h3>Top 5:</h3>\n<ol start=\"1\">\n";
+                for (let pos = 1; pos <= 5; pos++) {
                     const s = top5Config.scenes.find(sc => sc.position === pos);
                     const color = top5Config.globalText.colors[pos];
-                    textHtml += `  <li style="color: ${color}">${s.textContent}</li>\n`;
+
+                    // If this position has been revealed (pos >= startPosition), show the text
+                    if (pos >= scene.position) {
+                        textHtml += `  <li style="color: ${color}">${s.textContent}</li>\n`;
+                    } else {
+                        // Unrevealed - show blank placeholder
+                        textHtml += `  <li style="color: #666; opacity: 0.3;">___________</li>\n`;
+                    }
                 }
                 textHtml += "</ol>";
 
