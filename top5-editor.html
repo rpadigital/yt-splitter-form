@@ -692,8 +692,8 @@
                     const text = scene.textContent || `Item ${pos}`;
                     html += `  <li style="color: ${color}">${text}</li>\n`;
                 } else {
-                    // Unrevealed - show blank placeholder
-                    html += `  <li style="color: #666; opacity: 0.3;">___________</li>\n`;
+                    // Unrevealed - show blank (just the number)
+                    html += `  <li style="color: #666; opacity: 0.3;">&nbsp;</li>\n`;
                 }
             }
 
@@ -856,8 +856,8 @@
                     if (pos >= scene.position) {
                         textHtml += `  <li style="color: ${color}">${s.textContent}</li>\n`;
                     } else {
-                        // Unrevealed - show blank placeholder
-                        textHtml += `  <li style="color: #666; opacity: 0.3;">___________</li>\n`;
+                        // Unrevealed - show blank (just the number)
+                        textHtml += `  <li style="color: #666; opacity: 0.3;">&nbsp;</li>\n`;
                     }
                 }
                 textHtml += "</ol>";
