@@ -316,11 +316,16 @@
                 <div class="canvas-title">Preview (1080x1920)</div>
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="810" height="1440"></canvas>
-                    <video id="videoPreview" class="preview-video-layer" loop autoplay muted playsinline></video>
+                    <video id="videoPreview" class="preview-video-layer" loop autoplay playsinline></video>
                     <div id="textPreview" class="preview-text-layer"></div>
                 </div>
-                <div class="help-text">
-                    Preview shows cumulative list up to current scene
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <button id="muteToggleBtn" class="nav-btn" onclick="toggleMute()" style="padding: 8px 16px; font-size: 13px;">
+                        🔊 Mute
+                    </button>
+                    <div class="help-text" style="margin: 0;">
+                        Preview shows cumulative list up to current scene
+                    </div>
                 </div>
             </div>
 
@@ -818,6 +823,20 @@
 
             // Set cursor style
             canvas.style.cursor = 'move';
+        }
+
+        // Toggle mute/unmute
+        function toggleMute() {
+            const videoPreview = document.getElementById('videoPreview');
+            const muteBtn = document.getElementById('muteToggleBtn');
+
+            videoPreview.muted = !videoPreview.muted;
+
+            if (videoPreview.muted) {
+                muteBtn.textContent = '🔇 Unmute';
+            } else {
+                muteBtn.textContent = '🔊 Mute';
+            }
         }
 
         // Submit configuration
