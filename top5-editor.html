@@ -391,11 +391,37 @@
                 <!-- B-Roll Background -->
                 <div class="section-controls">
                     <div class="section-title">B-Roll Background (Optional)</div>
-                    <div class="input-group">
+                    <div class="input-group" style="margin-bottom: 15px;">
                         <label class="input-label">
                             <input type="checkbox" id="enableBroll" onchange="updatePreview()" style="margin-right: 8px;">
                             Enable Minecraft B-Roll Background (plays continuously across all scenes)
                         </label>
+                    </div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label class="input-label">B-Roll X Position</label>
+                            <input type="number" class="input-field" id="brollX" value="0" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">B-Roll Y Position</label>
+                            <input type="number" class="input-field" id="brollY" value="0" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">B-Roll Width</label>
+                            <input type="number" class="input-field" id="brollWidth" value="1080" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">B-Roll Height</label>
+                            <input type="number" class="input-field" id="brollHeight" value="1920" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">B-Roll Z-Index</label>
+                            <input type="number" class="input-field" id="brollZIndex" value="1" min="0" max="20" oninput="updatePreview()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Main Video Z-Index</label>
+                            <input type="number" class="input-field" id="videoZIndex" value="2" min="0" max="20" oninput="updatePreview()">
+                        </div>
                     </div>
                 </div>
 
@@ -501,7 +527,16 @@
                 height: 1920,
                 scale: 1.0,
                 baseWidth: 1080,
-                baseHeight: 1920
+                baseHeight: 1920,
+                zIndex: 2
+            },
+            broll: {
+                enabled: false,
+                x: 0,
+                y: 0,
+                width: 1080,
+                height: 1920,
+                zIndex: 1
             },
             globalText: {
                 x: 25,
@@ -569,7 +604,8 @@
                     { sceneIndex: 3, position: 2, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } },
                     { sceneIndex: 4, position: 1, clipIndex: null, textContent: "", videoConfig: { ...DEFAULTS.video } }
                 ],
-                globalText: { ...DEFAULTS.globalText }
+                globalText: { ...DEFAULTS.globalText },
+                broll: { ...DEFAULTS.broll }
             };
 
             // Load first scene
@@ -608,6 +644,15 @@
             document.getElementById('videoHeight').value = scene.videoConfig.height;
             document.getElementById('videoScale').value = scene.videoConfig.scale;
             document.getElementById('videoScaleValue').textContent = scene.videoConfig.scale.toFixed(1) + 'x';
+            document.getElementById('videoZIndex').value = scene.videoConfig.zIndex;
+
+            // Load b-roll values (same for all scenes)
+            document.getElementById('enableBroll').checked = top5Config.broll.enabled;
+            document.getElementById('brollX').value = top5Config.broll.x;
+            document.getElementById('brollY').value = top5Config.broll.y;
+            document.getElementById('brollWidth').value = top5Config.broll.width;
+            document.getElementById('brollHeight').value = top5Config.broll.height;
+            document.getElementById('brollZIndex').value = top5Config.broll.zIndex;
 
             // Load global text values (same for all scenes)
             document.getElementById('textX').value = top5Config.globalText.x;
@@ -640,6 +685,15 @@
             scene.videoConfig.width = parseInt(document.getElementById('videoWidth').value);
             scene.videoConfig.height = parseInt(document.getElementById('videoHeight').value);
             scene.videoConfig.scale = parseFloat(document.getElementById('videoScale').value);
+            scene.videoConfig.zIndex = parseInt(document.getElementById('videoZIndex').value);
+
+            // Save b-roll values
+            top5Config.broll.enabled = document.getElementById('enableBroll').checked;
+            top5Config.broll.x = parseInt(document.getElementById('brollX').value);
+            top5Config.broll.y = parseInt(document.getElementById('brollY').value);
+            top5Config.broll.width = parseInt(document.getElementById('brollWidth').value);
+            top5Config.broll.height = parseInt(document.getElementById('brollHeight').value);
+            top5Config.broll.zIndex = parseInt(document.getElementById('brollZIndex').value);
 
             // Save global text values
             top5Config.globalText.x = parseInt(document.getElementById('textX').value);
@@ -749,14 +803,14 @@
 
             // Update b-roll preview
             const brollPreview = document.getElementById('brollPreview');
-            const enableBroll = document.getElementById('enableBroll').checked;
 
-            if (enableBroll) {
+            if (top5Config.broll.enabled) {
                 brollPreview.style.display = 'block';
-                brollPreview.style.left = '0px';
-                brollPreview.style.top = '0px';
-                brollPreview.style.width = canvas.width + 'px';
-                brollPreview.style.height = canvas.height + 'px';
+                brollPreview.style.left = (top5Config.broll.x * SCALE) + 'px';
+                brollPreview.style.top = (top5Config.broll.y * SCALE) + 'px';
+                brollPreview.style.width = (top5Config.broll.width * SCALE) + 'px';
+                brollPreview.style.height = (top5Config.broll.height * SCALE) + 'px';
+                brollPreview.style.zIndex = top5Config.broll.zIndex;
 
                 // Load b-roll preview GIF if not already loaded
                 if (brollPreview.src !== BROLL_PREVIEW_GIF) {
@@ -772,6 +826,7 @@
             videoPreview.style.top = (scene.videoConfig.y * SCALE) + 'px';
             videoPreview.style.width = (scene.videoConfig.width * SCALE) + 'px';
             videoPreview.style.height = (scene.videoConfig.height * SCALE) + 'px';
+            videoPreview.style.zIndex = scene.videoConfig.zIndex;
 
             // Load video if clip is selected (only reload if source changed)
             if (scene.clipIndex !== null) {
@@ -929,7 +984,8 @@
                             y: scene.videoConfig.y,
                             width: scene.videoConfig.width,
                             height: scene.videoConfig.height,
-                            duration: clip.duration
+                            duration: clip.duration,
+                            "z-index": scene.videoConfig.zIndex
                         },
                         {
                             type: "text",
@@ -957,18 +1013,17 @@
 
             // Build movie-level elements (b-roll if enabled)
             const movieElements = [];
-            const enableBroll = document.getElementById('enableBroll').checked;
 
-            if (enableBroll) {
+            if (top5Config.broll.enabled) {
                 movieElements.push({
                     type: "video",
                     src: BROLL_URL,
-                    x: 0,
-                    y: 0,
-                    width: 1080,
-                    height: 1920,
+                    x: top5Config.broll.x,
+                    y: top5Config.broll.y,
+                    width: top5Config.broll.width,
+                    height: top5Config.broll.height,
                     duration: -2,  // Match total movie duration
-                    "z-index": 1   // Behind scene videos and text
+                    "z-index": top5Config.broll.zIndex
                 });
             }
 
