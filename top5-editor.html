@@ -740,14 +740,19 @@
             videoPreview.style.width = (scene.videoConfig.width * SCALE) + 'px';
             videoPreview.style.height = (scene.videoConfig.height * SCALE) + 'px';
 
-            // Load video if clip is selected
+            // Load video if clip is selected (only reload if source changed)
             if (scene.clipIndex !== null) {
                 const clip = editorData.selected_clips[scene.clipIndex];
-                videoPreview.src = clip.url;
-                videoPreview.load();
-                videoPreview.play().catch(e => console.log('Video play prevented:', e));
+                // Only reload video if the source has changed
+                if (videoPreview.src !== clip.url) {
+                    videoPreview.src = clip.url;
+                    videoPreview.load();
+                    videoPreview.play().catch(e => console.log('Video play prevented:', e));
+                }
             } else {
-                videoPreview.src = "";
+                if (videoPreview.src !== "") {
+                    videoPreview.src = "";
+                }
             }
 
             // Update text preview
