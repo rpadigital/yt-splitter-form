@@ -316,7 +316,7 @@
                 <div class="canvas-title">Preview (1080x1920)</div>
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="810" height="1440"></canvas>
-                    <video id="brollPreview" class="preview-video-layer" loop autoplay playsinline muted style="z-index: 1; display: none;"></video>
+                    <img id="brollPreview" class="preview-video-layer" style="z-index: 1; display: none; object-fit: cover;">
                     <video id="videoPreview" class="preview-video-layer" loop autoplay playsinline></video>
                     <div id="textPreview" class="preview-text-layer"></div>
                 </div>
@@ -484,6 +484,7 @@
     <script>
         const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
         const BROLL_URL = 'https://pub-a4ebf5a6b62f42dc95c2eb53043e6153.r2.dev/clips/job_20251113_215705_v823/engaging_001.mp4';
+        const BROLL_PREVIEW_GIF = 'https://pub-2b155994ac9b4cb89d29690eca5ce535.r2.dev/broll%20clips/ezgif.com-optimize.gif';
         const BASE_WIDTH = 1080;
         let SCALE = 1;
 
@@ -757,11 +758,9 @@
                 brollPreview.style.width = canvas.width + 'px';
                 brollPreview.style.height = canvas.height + 'px';
 
-                // Load b-roll if not already loaded
-                if (brollPreview.src !== BROLL_URL) {
-                    brollPreview.src = BROLL_URL;
-                    brollPreview.load();
-                    brollPreview.play().catch(e => console.log('B-roll play prevented:', e));
+                // Load b-roll preview GIF if not already loaded
+                if (brollPreview.src !== BROLL_PREVIEW_GIF) {
+                    brollPreview.src = BROLL_PREVIEW_GIF;
                 }
             } else {
                 brollPreview.style.display = 'none';
