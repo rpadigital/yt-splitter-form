@@ -316,6 +316,7 @@
                 <div class="canvas-title">Preview (1080x1920)</div>
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="previewCanvas" width="810" height="1440"></canvas>
+                    <video id="brollPreview" class="preview-video-layer" loop autoplay playsinline muted style="z-index: 1; display: none;"></video>
                     <video id="videoPreview" class="preview-video-layer" loop autoplay playsinline></video>
                     <div id="textPreview" class="preview-text-layer"></div>
                 </div>
@@ -384,6 +385,17 @@
                         <label class="input-label">Scale (Zoom)</label>
                         <input type="range" class="input-field" id="videoScale" min="0.5" max="2" step="0.1" value="1.0" style="padding: 0;" oninput="scaleVideo(this.value)">
                         <span id="videoScaleValue" style="font-size: 12px; color: #666;">1.0x</span>
+                    </div>
+                </div>
+
+                <!-- B-Roll Background -->
+                <div class="section-controls">
+                    <div class="section-title">B-Roll Background (Optional)</div>
+                    <div class="input-group">
+                        <label class="input-label">
+                            <input type="checkbox" id="enableBroll" onchange="updatePreview()" style="margin-right: 8px;">
+                            Enable Minecraft B-Roll Background (plays continuously across all scenes)
+                        </label>
                     </div>
                 </div>
 
@@ -471,6 +483,7 @@
 
     <script>
         const WEBHOOK_URL = 'https://hook.us1.make.com/jr7glmvh6pgnvqxbr2vgqftjtb2syicr';
+        const BROLL_URL = 'https://pub-a4ebf5a6b62f42dc95c2eb53043e6153.r2.dev/clips/job_20251113_215705_v823/engaging_001.mp4';
         const BASE_WIDTH = 1080;
         let SCALE = 1;
 
@@ -733,6 +746,27 @@
                 ctx.stroke();
             }
 
+            // Update b-roll preview
+            const brollPreview = document.getElementById('brollPreview');
+            const enableBroll = document.getElementById('enableBroll').checked;
+
+            if (enableBroll) {
+                brollPreview.style.display = 'block';
+                brollPreview.style.left = '0px';
+                brollPreview.style.top = '0px';
+                brollPreview.style.width = canvas.width + 'px';
+                brollPreview.style.height = canvas.height + 'px';
+
+                // Load b-roll if not already loaded
+                if (brollPreview.src !== BROLL_URL) {
+                    brollPreview.src = BROLL_URL;
+                    brollPreview.load();
+                    brollPreview.play().catch(e => console.log('B-roll play prevented:', e));
+                }
+            } else {
+                brollPreview.style.display = 'none';
+            }
+
             // Update video preview position
             const videoPreview = document.getElementById('videoPreview');
             videoPreview.style.left = (scene.videoConfig.x * SCALE) + 'px';
@@ -922,6 +956,23 @@
                 };
             });
 
+            // Build movie-level elements (b-roll if enabled)
+            const movieElements = [];
+            const enableBroll = document.getElementById('enableBroll').checked;
+
+            if (enableBroll) {
+                movieElements.push({
+                    type: "video",
+                    src: BROLL_URL,
+                    x: 0,
+                    y: 0,
+                    width: 1080,
+                    height: 1920,
+                    duration: -2,  // Match total movie duration
+                    "z-index": 1   // Behind scene videos and text
+                });
+            }
+
             const payload = {
                 job_id: editorData.job_id,
                 action: "create_top5_video",
@@ -930,7 +981,7 @@
                     height: 1920,
                     quality: "high",
                     scenes: scenes,
-                    elements: [],
+                    elements: movieElements,
                     exports: [{
                         destinations: [{
                             id: "make-webhook"
