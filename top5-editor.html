@@ -864,6 +864,7 @@
         function setupDragAndDrop() {
             const canvas = document.getElementById('previewCanvas');
             let isDragging = false;
+            let draggingElement = null; // 'video' or 'broll'
             let dragOffset = { x: 0, y: 0 };
 
             canvas.addEventListener('mousedown', (e) => {
@@ -872,16 +873,48 @@
                 const y = (e.clientY - rect.top) / SCALE;
 
                 const scene = top5Config.scenes[currentSceneIndex];
+
+                // Check if click is within main video bounds (check this first if it has higher z-index)
                 const videoX = scene.videoConfig.x;
                 const videoY = scene.videoConfig.y;
                 const videoWidth = scene.videoConfig.width;
                 const videoHeight = scene.videoConfig.height;
 
-                // Check if click is within video bounds
-                if (x >= videoX && x <= videoX + videoWidth &&
-                    y >= videoY && y <= videoY + videoHeight) {
+                // Check if click is within b-roll bounds (if enabled)
+                const brollX = top5Config.broll.x;
+                const brollY = top5Config.broll.y;
+                const brollWidth = top5Config.broll.width;
+                const brollHeight = top5Config.broll.height;
+
+                // Determine which element to drag based on z-index (higher z-index = on top)
+                const videoInBounds = x >= videoX && x <= videoX + videoWidth &&
+                                     y >= videoY && y <= videoY + videoHeight;
+                const brollInBounds = top5Config.broll.enabled &&
+                                     x >= brollX && x <= brollX + brollWidth &&
+                                     y >= brollY && y <= brollY + brollHeight;
+
+                if (videoInBounds && brollInBounds) {
+                    // Both elements clicked - drag the one with higher z-index
+                    if (scene.videoConfig.zIndex > top5Config.broll.zIndex) {
+                        isDragging = true;
+                        draggingElement = 'video';
+                        dragOffset = { x: x - videoX, y: y - videoY };
+                    } else {
+                        isDragging = true;
+                        draggingElement = 'broll';
+                        dragOffset = { x: x - brollX, y: y - brollY };
+                    }
+                } else if (videoInBounds) {
                     isDragging = true;
+                    draggingElement = 'video';
                     dragOffset = { x: x - videoX, y: y - videoY };
+                } else if (brollInBounds) {
+                    isDragging = true;
+                    draggingElement = 'broll';
+                    dragOffset = { x: x - brollX, y: y - brollY };
+                }
+
+                if (isDragging) {
                     canvas.style.cursor = 'grabbing';
                 }
             });
@@ -893,9 +926,15 @@
                 const x = (e.clientX - rect.left) / SCALE;
                 const y = (e.clientY - rect.top) / SCALE;
 
-                // Update video position
-                document.getElementById('videoX').value = Math.round(x - dragOffset.x);
-                document.getElementById('videoY').value = Math.round(y - dragOffset.y);
+                if (draggingElement === 'video') {
+                    // Update video position
+                    document.getElementById('videoX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('videoY').value = Math.round(y - dragOffset.y);
+                } else if (draggingElement === 'broll') {
+                    // Update b-roll position
+                    document.getElementById('brollX').value = Math.round(x - dragOffset.x);
+                    document.getElementById('brollY').value = Math.round(y - dragOffset.y);
+                }
 
                 updatePreview();
             });
@@ -903,6 +942,7 @@
             canvas.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
+                    draggingElement = null;
                     canvas.style.cursor = 'move';
                 }
             });
@@ -910,6 +950,7 @@
             canvas.addEventListener('mouseleave', () => {
                 if (isDragging) {
                     isDragging = false;
+                    draggingElement = null;
                     canvas.style.cursor = 'move';
                 }
             });
